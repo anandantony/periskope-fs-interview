@@ -42,9 +42,9 @@ Once you've completed the assignment:
    - Any additional notes or assumptions
 3. **Deploy to Vercel** and include the live URL in your PR description
 
-### Questions?
+## Questions?
 
-If you have any questions or need clarification, reach out to Bharat:  
+If you have any questions or need clarification, reach out to Bharat on email. Or ping here on
 📱 [WhatsApp](https://what.sapp.link/bharat)
 
 ---
