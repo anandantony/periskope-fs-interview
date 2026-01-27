@@ -2,8 +2,6 @@
 
 Welcome! This assignment evaluates your proficiency with core elements of our tech stack. Please read through all instructions before beginning
 
----
-
 ## Overview
 
 Your task is to replicate a WhatsApp group management interface. The screen displays a list of WhatsApp groups associated with a phone number.
@@ -11,8 +9,6 @@ Your task is to replicate a WhatsApp group management interface. The screen disp
 ### Reference Design
 
 ![UI Reference](https://i.postimg.cc/d0kFzwrN/290398091-452f9962-d017-4b3d-8d37-ab5942e91659.png)
-
----
 
 ## Requirements
 
@@ -35,8 +31,6 @@ Please use the following technologies:
 - **Database:** Supabase (for data storage and fetching)
 - **Language:** TypeScript (with pgSQL for database queries as needed)
 
----
-
 ## Submission Checklist
 
 Once you've completed the assignment:
@@ -48,9 +42,7 @@ Once you've completed the assignment:
    - Any additional notes or assumptions
 3. **Deploy to Vercel** and include the live URL in your PR description
 
----
-
-## Questions?
+### Questions?
 
 If you have any questions or need clarification, reach out to Bharat:  
 📱 [WhatsApp](https://what.sapp.link/bharat)
