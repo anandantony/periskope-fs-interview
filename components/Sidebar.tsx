@@ -1,44 +1,45 @@
-'use client'
+"use client";
 
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { 
-  MessageCircle, 
-  Users, 
-  Settings, 
-  Phone, 
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+  MessageCircle,
+  Users,
+  Settings,
+  Phone,
   FileText,
   HelpCircle,
   LayoutGrid,
   Search,
-  Plus
-} from 'lucide-react'
+} from "lucide-react";
 
 const sidebarItems = [
-  { icon: LayoutGrid, label: 'Dashboard', href: '#' },
-  { icon: MessageCircle, label: 'Chats', href: '#' },
-  { icon: Users, label: 'Groups', href: '#', active: true },
-  { icon: Phone, label: 'Contacts', href: '#' },
-  { icon: FileText, label: 'Logs', href: '#' },
-  { icon: FileText, label: 'Files', href: '#' },
-]
+  { icon: LayoutGrid, label: "Dashboard", href: "#" },
+  { icon: MessageCircle, label: "Chats", href: "#" },
+  { icon: Users, label: "Groups", href: "#", active: true },
+  { icon: Phone, label: "Contacts", href: "#" },
+  { icon: FileText, label: "Logs", href: "#" },
+  { icon: FileText, label: "Files", href: "#" },
+];
 
 const sidebarBottomItems = [
-  { icon: Settings, label: 'Settings', href: '#' },
-  { icon: HelpCircle, label: 'Help & Support', href: '#' },
-]
+  { icon: Settings, label: "Settings", href: "#" },
+  { icon: HelpCircle, label: "Help & Support", href: "#" },
+];
 
 interface SidebarProps {
-  className?: string
+  className?: string;
 }
 
 export function Sidebar({ className }: SidebarProps) {
   return (
-    <div className={cn(
-      "w-64 bg-white border-r border-gray-200 flex flex-col h-full",
-      className
-    )}>
+    <div
+      className={cn(
+        "w-64 bg-white border-r border-gray-200 flex flex-col h-full",
+        className,
+      )}
+    >
       {/* Header */}
       <div className="p-4">
         <div className="flex items-center space-x-3 mb-4">
@@ -73,7 +74,8 @@ export function Sidebar({ className }: SidebarProps) {
             variant={item.active ? "secondary" : "ghost"}
             className={cn(
               "w-full justify-start text-gray-700 hover:bg-gray-100",
-              item.active && "bg-green-50 text-green-700 hover:bg-green-100 font-semibold"
+              item.active &&
+                "bg-green-50 text-green-700 hover:bg-green-100 font-semibold",
             )}
             asChild={false}
           >
@@ -104,5 +106,5 @@ export function Sidebar({ className }: SidebarProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

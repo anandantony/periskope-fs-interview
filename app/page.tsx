@@ -1,102 +1,86 @@
-"use client";
+import HomePageClient from "@/app/HomePageClient";
+import {
+  getGroups,
+  getLabels,
+  getPhoneNumbers,
+  getProjects,
+} from "@/lib/server/whatsapp-groups";
 
-import { useState } from "react";
-import { TopNav } from "@/components/TopNav";
-import { Sidebar } from "@/components/Sidebar";
-import { GroupsTable } from "@/components/GroupsTable";
-import { SidePanel } from "@/components/SidePanel";
-import { useWhatsAppGroups } from "@/lib/hooks";
-import { WhatsAppGroup } from "@/types";
-import { Loader } from "lucide-react";
+export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const [selectedGroup, setSelectedGroup] = useState<WhatsAppGroup | null>(
-    null,
-  );
-  const [selectedPhone, setSelectedPhone] = useState<string | undefined>(undefined);
-  const [searchTerm, setSearchTermState] = useState("");
-  const [selectedProject, setSelectedProjectState] = useState("");
-  const [selectedLabels, setSelectedLabelsState] = useState<string[]>([]);
-  const { groups, loading, error, paginationLoading, pagination, setPage, setPageSize, projects, labels, projectsLoading, labelsLoading } =
-    useWhatsAppGroups({
-      phoneNumber: selectedPhone,
-      searchTerm: searchTerm,
-      projectFilter: selectedProject,
-      labelFilter: selectedLabels
-    });
+type PageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
-  // Connect local state changes to hook functions
-  const handleSearchChange = (term: string) => {
-    setSearchTermState(term);
-  };
+function getStringParam(
+  value: string | string[] | undefined,
+): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
 
-  const handleProjectFilterChange = (project: string) => {
-    setSelectedProjectState(project);
-  };
+function getNumberParam(
+  value: string | string[] | undefined,
+  fallback: number,
+): number {
+  const str = getStringParam(value);
+  if (!str) return fallback;
+  const n = Number(str);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
 
-  const handleLabelFilterChange = (labels: string[]) => {
-    setSelectedLabelsState(labels);
-  };
+export default async function HomePage({ searchParams }: PageProps) {
+  const sp = (await searchParams) ?? {};
 
-  const handleGroupClick = (group: WhatsAppGroup) => {
-    setSelectedGroup(group);
-  };
+  const phone = getStringParam(sp.phone);
+  const q = getStringParam(sp.q) ?? "";
+  const project = getStringParam(sp.project) ?? "";
+  const page = getNumberParam(sp.page, 1);
+  const pageSize = getNumberParam(sp.pageSize, 10);
 
-  // Only show full loader on initial load with no data
-  const showFullLoader = loading && groups.length === 0;
+  const labelsParam = getStringParam(sp.labels);
+  let labels: string[] = [];
+  if (labelsParam) {
+    try {
+      const parsed = JSON.parse(labelsParam);
+      if (Array.isArray(parsed)) {
+        labels = parsed.filter((v): v is string => typeof v === "string");
+      }
+    } catch {
+      labels = labelsParam
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+  }
+
+  const [phones, projects, allLabels] = await Promise.all([
+    getPhoneNumbers(),
+    getProjects(),
+    getLabels(),
+  ]);
+
+  const initialPhone = phone ?? phones[0];
+
+  const groupsResult = await getGroups({
+    phoneNumber: initialPhone,
+    searchTerm: q,
+    projectFilter: project,
+    labelFilter: labels,
+    page,
+    pageSize,
+  });
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
-      <TopNav phoneNumber={selectedPhone} onPhoneNumberChange={setSelectedPhone} />
-      
-      <div className="flex-1 flex">
-        <Sidebar />
-
-        <div className="flex-1 flex">
-        <div className="flex-1 overflow-auto flex flex-col">
-          {showFullLoader && (
-            <div className="flex items-center justify-center h-full">
-              <div className="flex flex-col items-center space-y-4">
-                <Loader className="w-8 h-8 animate-spin text-blue-500" />
-                <p className="text-gray-600">Loading WhatsApp groups...</p>
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-              <p className="font-semibold">Error loading groups</p>
-              <p className="text-sm">{error}</p>
-            </div>
-          )}
-
-          {!showFullLoader && !error && (
-            <GroupsTable
-              groups={groups}
-              onGroupClick={handleGroupClick}
-              selectedPhone={selectedPhone}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              total={pagination.total}
-              totalPages={pagination.totalPages}
-              paginationLoading={paginationLoading || loading}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-              onSearchChange={handleSearchChange}
-              onProjectFilterChange={handleProjectFilterChange}
-              onLabelFilterChange={handleLabelFilterChange}
-              projects={projects}
-              labels={labels}
-              projectsLoading={projectsLoading}
-              labelsLoading={labelsLoading}
-              className="rounded-none pb-0 border-0"
-            />
-          )}
-        </div>
-
-        <SidePanel selectedGroup={selectedGroup} />
-      </div>
-      </div>
-    </div>
+    <HomePageClient
+      initialPhones={phones}
+      initialPhone={initialPhone}
+      initialGroups={groupsResult.groups}
+      initialTotal={groupsResult.pagination.total}
+      initialPage={groupsResult.pagination.page}
+      initialPageSize={groupsResult.pagination.pageSize}
+      initialProjects={projects}
+      initialLabels={allLabels}
+    />
   );
 }

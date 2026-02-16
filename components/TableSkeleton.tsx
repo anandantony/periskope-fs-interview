@@ -1,13 +1,10 @@
-'use client';
-
-import { cn } from '@/lib/utils';
+"use client";
 
 interface TableSkeletonProps {
   rows?: number;
-  className?: string;
 }
 
-export function TableSkeleton({ rows = 10, className }: TableSkeletonProps) {
+export function TableSkeleton({ rows = 10 }: TableSkeletonProps) {
   return (
     <>
       {Array.from({ length: rows }).map((_, i) => (

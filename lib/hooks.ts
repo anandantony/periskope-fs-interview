@@ -1,189 +1,200 @@
-import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { WhatsAppGroup } from '@/types';
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { WhatsAppGroup } from "@/types";
 
-interface PaginationMeta {
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-}
-
-interface UseWhatsAppGroupsParams {
+type UseWhatsAppGroupsParams = {
   phoneNumber?: string;
   searchTerm?: string;
   projectFilter?: string;
   labelFilter?: string[];
-}
+  initialData?: {
+    groups: WhatsAppGroup[];
+    total: number;
+    page: number;
+    pageSize: number;
+    projects: string[];
+    labels: string[];
+  };
+};
+
+type GroupsApiResponse = {
+  groups: WhatsAppGroup[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+};
 
 const DEFAULT_PAGE_SIZE = 10;
 
-export function useWhatsAppGroups(params: UseWhatsAppGroupsParams = {}) {
-  const { phoneNumber, searchTerm = '', projectFilter = '', labelFilter = [] } = params;
+async function fetchJson<T>(
+  input: RequestInfo,
+  init?: RequestInit,
+): Promise<T> {
+  const res = await fetch(input, init);
+  const data: unknown = await res.json();
+  if (!res.ok) {
+    const message =
+      typeof (data as { error?: unknown } | null)?.error === "string"
+        ? (data as { error: string }).error
+        : "Request failed";
+    throw new Error(message);
+  }
+  return data as T;
+}
 
-  const [groups, setGroups] = useState<WhatsAppGroup[]>([]);
-  const [loading, setLoading] = useState(true);
+export function useWhatsAppGroups(params: UseWhatsAppGroupsParams = {}) {
+  const {
+    phoneNumber,
+    searchTerm = "",
+    projectFilter = "",
+    labelFilter = [],
+    initialData,
+  } = params;
+
+  const [groups, setGroups] = useState<WhatsAppGroup[]>(
+    initialData?.groups ?? [],
+  );
+  const [loading, setLoading] = useState(!initialData);
   const [paginationLoading, setPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(initialData?.page ?? 1);
+  const [pageSize, setPageSize] = useState(
+    initialData?.pageSize ?? DEFAULT_PAGE_SIZE,
+  );
+  const [total, setTotal] = useState(initialData?.total ?? 0);
 
-  const [projects, setProjects] = useState<string[]>([]);
-  const [labels, setLabels] = useState<string[]>([]);
-  const [projectsLoading, setProjectsLoading] = useState(true);
-  const [labelsLoading, setLabelsLoading] = useState(true);
+  const [projects, setProjects] = useState<string[]>(
+    initialData?.projects ?? [],
+  );
+  const [labels, setLabels] = useState<string[]>(initialData?.labels ?? []);
+  const [projectsLoading, setProjectsLoading] = useState(!initialData);
+  const [labelsLoading, setLabelsLoading] = useState(!initialData);
 
-  const totalPages = useMemo(() => Math.ceil(total / pageSize), [total, pageSize]);
+  const didUseInitialData = useRef(Boolean(initialData));
 
-  // --------------------------
-  // Main Data Fetch
-  // --------------------------
+  const totalPages = useMemo(
+    () => Math.ceil(total / pageSize),
+    [total, pageSize],
+  );
 
   useEffect(() => {
     let isMounted = true;
+    const controller = new AbortController();
 
-    const fetchGroups = async () => {
+    const run = async () => {
       try {
-        page === 1 ? setLoading(true) : setPaginationLoading(true);
+        if (didUseInitialData.current) {
+          didUseInitialData.current = false;
+          return;
+        }
+
+        if (page === 1) {
+          setLoading(true);
+        } else {
+          setPaginationLoading(true);
+        }
         setError(null);
 
-        let phoneId: number | null = null;
+        const url = new URL("/api/whatsapp-groups", window.location.origin);
+        if (phoneNumber) url.searchParams.set("phone", phoneNumber);
+        if (searchTerm) url.searchParams.set("q", searchTerm);
+        if (projectFilter) url.searchParams.set("project", projectFilter);
+        if (labelFilter.length > 0)
+          url.searchParams.set("labels", JSON.stringify(labelFilter));
+        url.searchParams.set("page", String(page));
+        url.searchParams.set("pageSize", String(pageSize));
 
-        // Get phone ID if needed
-        if (phoneNumber) {
-          const { data, error } = await supabase
-            .from('phone_numbers')
-            .select('id')
-            .eq('number', phoneNumber)
-            .single();
-
-          if (error || !data) {
-            throw new Error(`Phone number ${phoneNumber} not found`);
-          }
-
-          phoneId = data.id;
-        }
-
-        // Build single query with count
-        let query = supabase
-          .from('whatsapp_groups')
-          .select('*', { count: 'exact' });
-
-        if (phoneId !== null) {
-          query = query.eq('phone_id', phoneId);
-        }
-
-        if (searchTerm.trim()) {
-          query = query.ilike('name', `%${searchTerm.trim()}%`);
-        }
-
-        if (projectFilter) {
-          query = query.eq('project', projectFilter);
-        }
-
-        if (labelFilter.length > 0) {
-          query = query.filter('labels', 'cs', JSON.stringify(labelFilter));
-        }
-
-        const offset = (page - 1) * pageSize;
-
-        const { data, count, error } = await query
-          .order('created_at', { ascending: false })
-          .range(offset, offset + pageSize - 1);
-
-        if (error) throw error;
+        const result = await fetchJson<GroupsApiResponse>(url.toString(), {
+          signal: controller.signal,
+        });
 
         if (!isMounted) return;
-
-        setGroups(
-          (data || []).map((group: any) => ({
-            ...group,
-            labels: Array.isArray(group.labels) ? group.labels : [],
-          }))
-        );
-
-        setTotal(count || 0);
-      } catch (err: any) {
+        setGroups(result.groups);
+        setTotal(result.pagination.total);
+      } catch (e: unknown) {
         if (!isMounted) return;
-        setError(err.message || 'An error occurred');
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : "An error occurred");
       } finally {
         if (!isMounted) return;
-        page === 1 ? setLoading(false) : setPaginationLoading(false);
+        if (page === 1) {
+          setLoading(false);
+        } else {
+          setPaginationLoading(false);
+        }
       }
     };
 
-    fetchGroups();
+    run();
 
     return () => {
       isMounted = false;
+      controller.abort();
     };
   }, [page, pageSize, phoneNumber, searchTerm, projectFilter, labelFilter]);
 
-  // --------------------------
-  // Load Projects
-  // --------------------------
-
   useEffect(() => {
-    const fetchProjects = async () => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const run = async () => {
       try {
         setProjectsLoading(true);
-
-        const { data, error } = await supabase
-          .from('whatsapp_groups')
-          .select('project')
-          .not('project', 'is', null)
-          .order('project');
-
-        if (error) throw error;
-
-        const unique = Array.from(
-          new Set((data || []).map((g) => g.project).filter(Boolean))
-        );
-
-        setProjects(unique);
-      } catch (err) {
-        console.error('Error loading projects:', err);
+        const data = await fetchJson<{ projects: string[] }>("/api/projects", {
+          signal: controller.signal,
+        });
+        if (!isMounted) return;
+        setProjects(data.projects);
+      } catch {
+        // ignore
       } finally {
+        if (!isMounted) return;
         setProjectsLoading(false);
       }
     };
 
-    fetchProjects();
-  }, []);
+    if (!initialData) {
+      run();
+    }
 
-  // --------------------------
-  // Load Labels
-  // --------------------------
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [initialData]);
 
   useEffect(() => {
-    const fetchLabels = async () => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const run = async () => {
       try {
         setLabelsLoading(true);
-
-        const { data, error } = await supabase
-          .from('whatsapp_groups')
-          .select('labels');
-
-        if (error) throw error;
-
-        const allLabels = (data || [])
-          .flatMap((g) => (Array.isArray(g.labels) ? g.labels : []))
-          .filter(Boolean);
-
-        const unique = Array.from(new Set(allLabels));
-
-        setLabels(unique);
-      } catch (err) {
-        console.error('Error loading labels:', err);
+        const data = await fetchJson<{ labels: string[] }>("/api/labels", {
+          signal: controller.signal,
+        });
+        if (!isMounted) return;
+        setLabels(data.labels);
+      } catch {
+        // ignore
       } finally {
+        if (!isMounted) return;
         setLabelsLoading(false);
       }
     };
 
-    fetchLabels();
-  }, []);
+    if (!initialData) {
+      run();
+    }
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [initialData]);
 
   return {
     groups,

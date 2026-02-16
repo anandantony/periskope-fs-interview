@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -14,13 +14,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { WhatsAppGroup } from "@/types";
-import { Users, Clock, MoreHorizontal, Search, Filter, Send, ChevronDown, X } from "lucide-react";
+import {
+  Users,
+  MoreHorizontal,
+  Search,
+  Filter,
+  Send,
+  ChevronDown,
+  X,
+} from "lucide-react";
 import { TableSkeleton } from "@/components/TableSkeleton";
 
 interface GroupsTableProps {
   groups: WhatsAppGroup[];
   selectedPhone?: string | undefined;
-  onGroupClick?: (group: WhatsAppGroup) => void;
+  onGroupClick?: (group: WhatsAppGroup | null) => void;
   className?: string;
   page?: number;
   pageSize?: number;
@@ -34,30 +42,30 @@ interface GroupsTableProps {
 
 // Project color mapping
 const projectColors: Record<string, string> = {
-  "Demo": "bg-blue-100 text-blue-700",
-  "Clients": "bg-orange-100 text-orange-700",
-  "Professional": "bg-purple-100 text-purple-700",
-  "Social": "bg-green-100 text-green-700",
-  "Health": "bg-red-100 text-red-700",
-  "Education": "bg-indigo-100 text-indigo-700",
-  "Lifestyle": "bg-pink-100 text-pink-700",
-  "General": "bg-gray-100 text-gray-700",
+  Demo: "bg-blue-100 text-blue-700",
+  Clients: "bg-orange-100 text-orange-700",
+  Professional: "bg-purple-100 text-purple-700",
+  Social: "bg-green-100 text-green-700",
+  Health: "bg-red-100 text-red-700",
+  Education: "bg-indigo-100 text-indigo-700",
+  Lifestyle: "bg-pink-100 text-pink-700",
+  General: "bg-gray-100 text-gray-700",
 };
 
 // Label color mapping
 const labelColors: Record<string, string> = {
-  "Active": "bg-green-100 text-green-700",
-  "Inactive": "bg-gray-100 text-gray-700",
-  "Important": "bg-red-100 text-red-700",
-  "Urgent": "bg-orange-100 text-orange-700",
-  "Daily": "bg-blue-100 text-blue-700",
-  "Community": "bg-purple-100 text-purple-700",
-  "Archive": "bg-gray-100 text-gray-700",
-  "Wellness": "bg-green-100 text-green-700",
-  "Casual": "bg-blue-100 text-blue-700",
-  "Monthly": "bg-indigo-100 text-indigo-700",
-  "Creative": "bg-pink-100 text-pink-700",
-  "Planning": "bg-yellow-100 text-yellow-700",
+  Active: "bg-green-100 text-green-700",
+  Inactive: "bg-gray-100 text-gray-700",
+  Important: "bg-red-100 text-red-700",
+  Urgent: "bg-orange-100 text-orange-700",
+  Daily: "bg-blue-100 text-blue-700",
+  Community: "bg-purple-100 text-purple-700",
+  Archive: "bg-gray-100 text-gray-700",
+  Wellness: "bg-green-100 text-green-700",
+  Casual: "bg-blue-100 text-blue-700",
+  Monthly: "bg-indigo-100 text-indigo-700",
+  Creative: "bg-pink-100 text-pink-700",
+  Planning: "bg-yellow-100 text-yellow-700",
 };
 
 export function GroupsTable({
@@ -95,25 +103,21 @@ export function GroupsTable({
   const [tempLabels, setTempLabels] = useState<string[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
 
-  // Initialize temp values when filters open
-  useEffect(() => {
-    if (showFilters) {
-      setTempProject(selectedProject);
-      setTempLabels([...selectedLabels]);
-    }
-  }, [showFilters, selectedProject, selectedLabels]);
-
   // Handle click outside to close filter
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(event.target as Node)
+      ) {
         setShowFilters(false);
       }
     };
 
     if (showFilters) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showFilters]);
 
@@ -129,7 +133,7 @@ export function GroupsTable({
   const handleRowClick = (group: WhatsAppGroup) => {
     if (selectedGroup === group.id) {
       setSelectedGroup(null);
-      onGroupClick?.(null as any);
+      onGroupClick?.(null);
       return;
     }
     setSelectedGroup(group.id);
@@ -161,7 +165,13 @@ export function GroupsTable({
     applyState({ project: tempProject, labels: tempLabels });
   };
 
-  const applyState = ({ project, labels }: { project?: string; labels?: string[] }) => {
+  const applyState = ({
+    project,
+    labels,
+  }: {
+    project?: string;
+    labels?: string[];
+  }) => {
     setSelectedProject(project || "");
     setSelectedLabels(labels || []);
     onProjectFilterChange?.(project || "");
@@ -185,23 +195,25 @@ export function GroupsTable({
             {selectedPhone ? (
               <div className="ml-3 text-sm text-gray-600">{selectedPhone}</div>
             ) : (
-              <div className="ml-3 text-sm text-gray-500">All phone numbers</div>
+              <div className="ml-3 text-sm text-gray-500">
+                All phone numbers
+              </div>
             )}
           </div>
-          
+
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="gap-2 border-gray-300 hover:bg-gray-50"
             >
               <Send className="w-4 h-4" />
               Bulk message
             </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
+
+            <Button
+              variant="outline"
+              size="sm"
               className="gap-2 border-gray-300 hover:bg-gray-50"
             >
               Group Actions
@@ -209,7 +221,7 @@ export function GroupsTable({
             </Button>
           </div>
         </div>
-        
+
         {/* Bottom Row - Search and Filter */}
         <div className="flex gap-2">
           <div className="relative flex-1 max-w-md">
@@ -237,23 +249,32 @@ export function GroupsTable({
             )}
           </div>
           <div className="relative">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setShowFilters(!showFilters)}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setTempProject(selectedProject);
+                setTempLabels([...selectedLabels]);
+                setShowFilters((v) => !v);
+              }}
               className="gap-2 border-gray-300 hover:bg-gray-50"
             >
               <Filter className="w-4 h-4" />
               Filter
             </Button>
-            
+
             {showFilters && (
-              <div ref={filterRef} className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <div
+                ref={filterRef}
+                className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+              >
                 <div className="p-4">
                   <div className="space-y-4">
                     {/* Project Filter */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-2">Project</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-2">
+                        Project
+                      </label>
                       <select
                         value={tempProject}
                         onChange={(e) => setTempProject(e.target.value)}
@@ -270,10 +291,15 @@ export function GroupsTable({
 
                     {/* Labels Filter */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-2">Labels</label>
+                      <label className="block text-xs font-medium text-gray-700 mb-2">
+                        Labels
+                      </label>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {labels.map((label) => (
-                          <label key={label} className="flex items-center space-x-2 cursor-pointer">
+                          <label
+                            key={label}
+                            className="flex items-center space-x-2 cursor-pointer"
+                          >
                             <input
                               type="checkbox"
                               checked={tempLabels.includes(label)}
@@ -281,7 +307,9 @@ export function GroupsTable({
                                 if (e.target.checked) {
                                   setTempLabels([...tempLabels, label]);
                                 } else {
-                                  setTempLabels(tempLabels.filter(l => l !== label));
+                                  setTempLabels(
+                                    tempLabels.filter((l) => l !== label),
+                                  );
                                 }
                               }}
                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
@@ -289,7 +317,8 @@ export function GroupsTable({
                             <Badge
                               className={cn(
                                 "text-xs",
-                                labelColors[label] || "bg-gray-100 text-gray-700",
+                                labelColors[label] ||
+                                  "bg-gray-100 text-gray-700",
                               )}
                               variant="outline"
                             >
@@ -325,7 +354,7 @@ export function GroupsTable({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
         <div className="overflow-auto flex-1">
           <Table>
@@ -345,7 +374,10 @@ export function GroupsTable({
                 <TableSkeleton rows={pageSize} />
               ) : groups.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-8 text-gray-500"
+                  >
                     No groups found
                   </TableCell>
                 </TableRow>
@@ -403,25 +435,36 @@ export function GroupsTable({
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {group.labels && group.labels.length > 0 ? (
-                          group.labels.slice(0, 2).map((label: string, index: number) => (
-                            <Badge
-                              key={index}
-                              className={cn(
-                                "text-xs",
-                                labelColors[label] || "bg-gray-100 text-gray-700",
-                              )}
-                              variant="outline"
-                            >
-                              {label.length > 8 ? `${label.substring(0, 8)}...` : label}
-                            </Badge>
-                          ))
+                          group.labels
+                            .slice(0, 2)
+                            .map((label: string, index: number) => (
+                              <Badge
+                                key={index}
+                                className={cn(
+                                  "text-xs",
+                                  labelColors[label] ||
+                                    "bg-gray-100 text-gray-700",
+                                )}
+                                variant="outline"
+                              >
+                                {label.length > 8
+                                  ? `${label.substring(0, 8)}...`
+                                  : label}
+                              </Badge>
+                            ))
                         ) : (
-                          <Badge variant="outline" className="text-xs text-gray-500">
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-gray-500"
+                          >
                             No labels
                           </Badge>
                         )}
                         {group.labels && group.labels.length > 2 && (
-                          <Badge variant="outline" className="text-xs text-gray-500">
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-gray-500"
+                          >
                             +{group.labels.length - 2}
                           </Badge>
                         )}
@@ -461,10 +504,14 @@ export function GroupsTable({
           <div className="flex items-center justify-between px-4 py-4 border-t bg-gray-50">
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600">
-                Showing <span className="font-semibold">{(page - 1) * pageSize + 1}</span> to{' '}
+                Showing{" "}
+                <span className="font-semibold">
+                  {(page - 1) * pageSize + 1}
+                </span>{" "}
+                to{" "}
                 <span className="font-semibold">
                   {Math.min(page * pageSize, total)}
-                </span>{' '}
+                </span>{" "}
                 of <span className="font-semibold">{total}</span> groups
               </div>
 
@@ -517,8 +564,8 @@ export function GroupsTable({
                       className={cn(
                         "h-8 w-8 rounded border text-sm font-medium transition-colors",
                         pageNum === page
-                          ? 'bg-blue-500 text-white border-blue-500'
-                          : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                          ? "bg-blue-500 text-white border-blue-500"
+                          : "border-gray-300 text-gray-600 hover:bg-gray-100",
                       )}
                     >
                       {pageNum}
