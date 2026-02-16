@@ -127,6 +127,11 @@ export function GroupsTable({
   }, [searchTerm, onSearchChange]);
 
   const handleRowClick = (group: WhatsAppGroup) => {
+    if (selectedGroup === group.id) {
+      setSelectedGroup(null);
+      onGroupClick?.(null as any);
+      return;
+    }
     setSelectedGroup(group.id);
     onGroupClick?.(group);
   };
