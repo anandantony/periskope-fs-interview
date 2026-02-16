@@ -18,6 +18,13 @@ export function SidePanel({ selectedGroup, className }: SidePanelProps) {
   const [activeTab, setActiveTab] = useState<"overview" | "members" | "logs">("overview");
   const tabs: Array<"overview" | "members" | "logs"> = ["overview", "members", "logs"];
 
+  const createdAtText = (() => {
+    if (!selectedGroup?.created_at) return "";
+    const d = new Date(selectedGroup.created_at);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+  })();
+
   if (!selectedGroup) {
     return (
       <div
@@ -144,9 +151,7 @@ export function SidePanel({ selectedGroup, className }: SidePanelProps) {
               <div className="space-y-2">
                 <div className="flex items-center space-x-3">
                   <Calendar className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">
-                    Created {new Date(selectedGroup.created_at).toLocaleDateString()}
-                  </span>
+                  <span className="text-sm text-gray-600">Created {createdAtText}</span>
                 </div>
               </div>
             </div>
