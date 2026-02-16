@@ -1,6 +1,6 @@
 # WhatsApp Group Management Interface
 
-## 🚀 Live Demo
+## Live Demo
 
 [![View Live Demo](https://img.shields.io/badge/View%20Live%20Demo-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)](https://periskope-fs-interview.vercel.app/)
 [![Deploy with Vercel](https://img.shields.io/badge/Deploy-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fanandantony%2Fperiskope-fs-interview)
@@ -9,7 +9,8 @@ Experience the application in action! The live demo is hosted using Vercel.
 
 A compact Next.js + Supabase example app for viewing and managing WhatsApp-style group metadata. It demonstrates:
 
-- Server-side pagination and filtering via Supabase
+- Server-rendered initial page load (SSR)
+- Smooth client-side updates (search/filter/pagination) via Next.js route handlers
 - Normalized phone numbers (`phone_numbers`) with `whatsapp_groups.phone_id` foreign key
 - A small, responsive UI built with Tailwind CSS and shadcn/ui components
 
@@ -45,10 +46,15 @@ cp .env.example .env.local
 Then edit `.env.local` and set:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_URL=your-supabase-url
+SUPABASE_PUBLISHABLE_DEFAULT_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
+
+Notes:
+
+- `SUPABASE_SERVICE_ROLE_KEY` is sensitive. Do not expose it in the browser.
+- No auth is implemented (assignment scope); API routes are public.
 
 Database setup
 
@@ -124,14 +130,19 @@ Key scripts
 - `npm run db:seed` — run small seeder (upserts `phone_numbers`, inserts groups)
 - `npm run db:generate-large` — generate a large SQL file under `supabase/` for bulk testing
 - `npm run db:seed-large` — load the generated large dataset into Supabase
+- `npm run lint` — run ESLint
+- `npm run lint:fix` — auto-fix ESLint issues
+- `npm run format` — format the repo with Prettier
+- `npm run format:check` — check formatting with Prettier
 
 Project structure
 
 ```bash
 ├── app/                    # Next.js app directory (App Router)
+│   └── api/                # Route handlers used for client-side data fetching
 ├── components/             # React components (TopNav, GroupsTable, Sidebar, SidePanel)
 ├── components/ui/          # shadcn/ui wrappers (Select, Button, Card, etc.)
-├── lib/                    # Utilities and Supabase client
+├── lib/                    # Utilities, hooks, and server-only Supabase access
 ├── supabase/               # Migrations and SQL seed files
 ├── scripts/                # Seed/generator scripts
 ├── types/                  # TypeScript type definitions
@@ -140,9 +151,20 @@ Project structure
 
 Usage highlights
 
-- Browse groups and filter by phone number via the top selector
-- Server-side pagination keeps UI responsive for large datasets
+- Browse groups and filter by phone number via the top selector (includes an "All phone numbers" option)
+- Pagination, search, and filters update the table without a full page reload
+- URL query params reflect the current state so refresh/share/back-forward work
 - Seed scripts provide both small and large datasets for testing
+
+URL state
+
+The main page uses these query params:
+
+- `phone` (always present): a phone number or `all`
+- `q`: search term
+- `project`: project filter
+- `labels`: JSON stringified array of labels
+- `page`, `pageSize`: pagination
 
 Deployment (Vercel)
 
@@ -150,14 +172,15 @@ Deployment (Vercel)
 
 1. Push the repository to GitHub
 2. Connect the repo in Vercel
-3. Configure environment variables in the Vercel dashboard (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
+3. Configure environment variables in the Vercel dashboard (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_DEFAULT_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
 4. Deploy — Vercel will automatically build the Next.js app
 
 Developer notes
 
-- The Supabase client is in `lib/supabase.ts` and the UI uses `useWhatsAppGroups` hook for paginated queries
+- SSR: `app/page.tsx` reads `searchParams` and fetches initial data using server functions in `lib/server/whatsapp-groups.ts`.
+- Client fetching: interactive updates call route handlers under `app/api/*`, and `useWhatsAppGroups` fetches from `/api/whatsapp-groups`.
 - Seed scripts use `dotenv` for local env values when run from your machine
-- The `TopNav` component fetches phone numbers from `phone_numbers` and provides an "All phone numbers" option
+- The `TopNav` component receives phone numbers via props and provides an "All phone numbers" option.
 
 License
 This repository is a take-home demo and is provided for assessment purposes.

@@ -14,12 +14,12 @@ import { config } from "dotenv";
 config({ path: [".env.local", ".env"] });
 
 // Load environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error("❌ Missing Supabase environment variables");
-  console.error("   NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "✓" : "✗");
+  console.error("   SUPABASE_URL:", supabaseUrl ? "✓" : "✗");
   console.error("   SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "✓" : "✗");
   process.exit(1);
 }
