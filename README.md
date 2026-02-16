@@ -1,52 +1,36 @@
-# Periskope — Full-Stack Engineer Take-Home Assignment
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Welcome! This assignment evaluates your proficiency with core elements of our tech stack. Please read through all instructions before beginning
+## Getting Started
 
-## Overview
+First, run the development server:
 
-Your task is to replicate a WhatsApp group management interface. The screen displays a list of WhatsApp groups associated with a phone number.
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-### Reference Design
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-![UI Reference](https://i.postimg.cc/d0kFzwrN/290398091-452f9962-d017-4b3d-8d37-ab5942e91659.png)
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Requirements
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### Required Components
+## Learn More
 
-| Component | Requirements |
-|-----------|--------------|
-| **Sidebar** | Navigation UI (functional navigation not required) |
-| **Table** | Scrollable rows, clickable rows (mock data is acceptable) |
-| **Side Panel** | UI only |
+To learn more about Next.js, take a look at the following resources:
 
-> **Note:** All other features shown in the reference are optional enhancements.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-### Tech Stack
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-Please use the following technologies:
+## Deploy on Vercel
 
-- **Framework:** Next.js 13+ (App Router)
-- **Styling:** Tailwind CSS
-- **Database:** Supabase (for data storage and fetching)
-- **Language:** TypeScript (with pgSQL for database queries as needed)
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-## Submission Checklist
-
-Once you've completed the assignment:
-
-1. **Share a link to your repo** - Please make sure it is public
-2. **Include documentation** with:
-   - Setup instructions for running locally
-   - Required environment variables (`.env.example`)
-   - Any additional notes or assumptions
-3. **Deploy to Vercel** and include the live URL in your PR description
-
-## Questions?
-
-If you have any questions or need clarification, reach out to Bharat on email. Or ping here on
-📱 [WhatsApp](https://what.sapp.link/bharat)
-
----
-
-Good luck! We look forward to reviewing your submission.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
