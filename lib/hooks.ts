@@ -87,7 +87,7 @@ export function useWhatsAppGroups(params: UseWhatsAppGroupsParams = {}) {
         setError(null);
 
         const url = new URL("/api/whatsapp-groups", window.location.origin);
-        if (phoneNumber) url.searchParams.set("phone", phoneNumber);
+        if (phoneNumber && phoneNumber !== "all") url.searchParams.set("phone", phoneNumber);
         if (searchTerm) url.searchParams.set("q", searchTerm);
         if (projectFilter) url.searchParams.set("project", projectFilter);
         if (labelFilter.length > 0) url.searchParams.set("labels", JSON.stringify(labelFilter));

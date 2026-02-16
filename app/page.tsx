@@ -22,7 +22,7 @@ function getNumberParam(value: string | string[] | undefined, fallback: number):
 export default async function HomePage({ searchParams }: PageProps) {
   const sp = (await searchParams) ?? {};
 
-  const phone = getStringParam(sp.phone);
+  const phoneParam = getStringParam(sp.phone);
   const q = getStringParam(sp.q) ?? "";
   const project = getStringParam(sp.project) ?? "";
   const page = getNumberParam(sp.page, 1);
@@ -50,10 +50,11 @@ export default async function HomePage({ searchParams }: PageProps) {
     getLabels(),
   ]);
 
-  const initialPhone = phone ?? phones[0];
+  const isAllPhones = !phoneParam || phoneParam === "all";
+  const initialPhone = isAllPhones ? "all" : phoneParam;
 
   const groupsResult = await getGroups({
-    phoneNumber: initialPhone,
+    phoneNumber: initialPhone === "all" ? undefined : initialPhone,
     searchTerm: q,
     projectFilter: project,
     labelFilter: labels,
@@ -65,6 +66,9 @@ export default async function HomePage({ searchParams }: PageProps) {
     <HomePageClient
       initialPhones={phones}
       initialPhone={initialPhone}
+      initialSearchTerm={q}
+      initialProject={project}
+      initialSelectedLabels={labels}
       initialGroups={groupsResult.groups}
       initialTotal={groupsResult.pagination.total}
       initialPage={groupsResult.pagination.page}

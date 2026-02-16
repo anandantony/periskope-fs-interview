@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { TopNav } from "@/components/TopNav";
 import { Sidebar } from "@/components/Sidebar";
 import { GroupsTable } from "@/components/GroupsTable";
@@ -11,7 +12,10 @@ import { Loader } from "lucide-react";
 
 type HomePageClientProps = {
   initialPhones: string[];
-  initialPhone?: string;
+  initialPhone: string;
+  initialSearchTerm: string;
+  initialProject: string;
+  initialSelectedLabels: string[];
   initialGroups: WhatsAppGroup[];
   initialTotal: number;
   initialPage: number;
@@ -23,6 +27,9 @@ type HomePageClientProps = {
 export default function HomePageClient({
   initialPhones,
   initialPhone,
+  initialSearchTerm,
+  initialProject,
+  initialSelectedLabels,
   initialGroups,
   initialTotal,
   initialPage,
@@ -30,11 +37,55 @@ export default function HomePageClient({
   initialProjects,
   initialLabels,
 }: HomePageClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [selectedGroup, setSelectedGroup] = useState<WhatsAppGroup | null>(null);
-  const [selectedPhone, setSelectedPhone] = useState<string | undefined>(initialPhone);
-  const [searchTerm, setSearchTermState] = useState("");
-  const [selectedProject, setSelectedProjectState] = useState("");
-  const [selectedLabels, setSelectedLabelsState] = useState<string[]>([]);
+  const [selectedPhone, setSelectedPhone] = useState<string>(initialPhone);
+  const [searchTerm, setSearchTermState] = useState(initialSearchTerm);
+  const [selectedProject, setSelectedProjectState] = useState(initialProject);
+  const [selectedLabels, setSelectedLabelsState] = useState<string[]>(initialSelectedLabels);
+
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const urlState = useMemo(() => {
+    const phone = searchParams.get("phone") ?? "all";
+    const q = searchParams.get("q") ?? "";
+    const project = searchParams.get("project") ?? "";
+    const page = Number(searchParams.get("page") ?? "1");
+    const pageSize = Number(searchParams.get("pageSize") ?? "10");
+
+    const labelsRaw = searchParams.get("labels");
+    let labels: string[] = [];
+    if (labelsRaw) {
+      try {
+        const parsed = JSON.parse(labelsRaw);
+        if (Array.isArray(parsed)) {
+          labels = parsed.filter((v): v is string => typeof v === "string");
+        }
+      } catch {
+        labels = labelsRaw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+    }
+
+    return {
+      phone: phone === "all" ? "all" : phone,
+      q,
+      project,
+      labels,
+      page: Number.isFinite(page) && page > 0 ? page : 1,
+      pageSize: Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 10,
+    };
+  }, [searchParams]);
 
   const {
     groups,
@@ -63,16 +114,86 @@ export default function HomePageClient({
     },
   });
 
+  useEffect(() => {
+    const phoneFromUrl = urlState.phone;
+    const qFromUrl = urlState.q;
+    const projectFromUrl = urlState.project;
+    const labelsFromUrl = urlState.labels;
+
+    if (selectedPhone !== phoneFromUrl) {
+      setSelectedPhone(phoneFromUrl);
+      setSelectedGroup(null);
+    }
+
+    if (searchTerm !== qFromUrl) {
+      setSearchTermState(qFromUrl);
+    }
+
+    if (selectedProject !== projectFromUrl) {
+      setSelectedProjectState(projectFromUrl);
+    }
+
+    if (JSON.stringify(selectedLabels) !== JSON.stringify(labelsFromUrl)) {
+      setSelectedLabelsState(labelsFromUrl);
+    }
+
+    if (pagination.page !== urlState.page) {
+      setPage(urlState.page);
+    }
+
+    if (pagination.pageSize !== urlState.pageSize) {
+      setPageSize(urlState.pageSize);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlState]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.set("phone", selectedPhone || "all");
+
+    if (debouncedSearchTerm) params.set("q", debouncedSearchTerm);
+    else params.delete("q");
+
+    if (selectedProject) params.set("project", selectedProject);
+    else params.delete("project");
+
+    if (selectedLabels.length > 0) params.set("labels", JSON.stringify(selectedLabels));
+    else params.delete("labels");
+
+    params.set("page", String(pagination.page));
+    params.set("pageSize", String(pagination.pageSize));
+
+    const next = `${pathname}?${params.toString()}`;
+    const current = `${pathname}?${searchParams.toString()}`;
+    if (next !== current) {
+      router.replace(next, { scroll: false });
+    }
+  }, [
+    debouncedSearchTerm,
+    pathname,
+    pagination.page,
+    pagination.pageSize,
+    router,
+    searchParams,
+    selectedLabels,
+    selectedPhone,
+    selectedProject,
+  ]);
+
   const handleSearchChange = (term: string) => {
     setSearchTermState(term);
+    setPage(1);
   };
 
   const handleProjectFilterChange = (project: string) => {
     setSelectedProjectState(project);
+    setPage(1);
   };
 
   const handleLabelFilterChange = (labels: string[]) => {
     setSelectedLabelsState(labels);
+    setPage(1);
   };
 
   const handleGroupClick = (group: WhatsAppGroup | null) => {
@@ -119,6 +240,9 @@ export default function HomePageClient({
                 groups={groups}
                 onGroupClick={handleGroupClick}
                 selectedPhone={selectedPhone}
+                searchTerm={searchTerm}
+                selectedProject={selectedProject}
+                selectedLabels={selectedLabels}
                 page={pagination.page}
                 pageSize={pagination.pageSize}
                 total={pagination.total}

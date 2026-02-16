@@ -31,7 +31,8 @@ function parseLabels(value: string | null): string[] {
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const phoneNumber = url.searchParams.get("phone") ?? undefined;
+    const phoneParam = url.searchParams.get("phone") ?? undefined;
+    const phoneNumber = phoneParam && phoneParam !== "all" ? phoneParam : undefined;
     const searchTerm = parseString(url.searchParams.get("q"));
     const projectFilter = parseString(url.searchParams.get("project"));
     const labelFilter = parseLabels(url.searchParams.get("labels"));

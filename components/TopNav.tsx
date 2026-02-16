@@ -16,18 +16,15 @@ interface TopNavProps {
   className?: string;
   phones: string[];
   phoneNumber?: string | undefined;
-  onPhoneNumberChange?: (phone?: string) => void;
+  onPhoneNumberChange?: (phone: string) => void;
 }
 
 export function TopNav({ className, phones, phoneNumber, onPhoneNumberChange }: TopNavProps) {
-  const ALL_VALUE = "ALL_PHONE_NUMBERS";
-
   useEffect(() => {
-    // If caller hasn't selected a phone yet, choose first by default
-    if ((!phoneNumber || phoneNumber === "") && phones.length > 0) {
-      onPhoneNumberChange?.(phones[0]);
+    if ((!phoneNumber || phoneNumber === "") && onPhoneNumberChange) {
+      onPhoneNumberChange("all");
     }
-  }, [phones, phoneNumber, onPhoneNumberChange]);
+  }, [phoneNumber, onPhoneNumberChange]);
 
   return (
     <div
@@ -57,16 +54,13 @@ export function TopNav({ className, phones, phoneNumber, onPhoneNumberChange }: 
           {/* Phone Number Selector */}
           <div className="flex items-center gap-2">
             <Phone className="w-4 h-4 text-gray-400" />
-            <Select
-              value={phoneNumber ?? ""}
-              onValueChange={(v) => onPhoneNumberChange?.(v === ALL_VALUE ? undefined : v)}
-            >
+            <Select value={phoneNumber ?? "all"} onValueChange={(v) => onPhoneNumberChange?.(v)}>
               <SelectTrigger className="text-sm text-gray-600">
                 <SelectValue placeholder="Select phone" />
               </SelectTrigger>
               <SelectContent position="popper">
                 {/* Allow viewing all numbers when empty value selected */}
-                <SelectItem value={ALL_VALUE}>
+                <SelectItem value="all">
                   <span className="text-sm">All phone numbers</span>
                 </SelectItem>
                 {phones.map((p) => (

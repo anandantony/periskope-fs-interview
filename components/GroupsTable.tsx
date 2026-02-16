@@ -20,6 +20,9 @@ import { TableSkeleton } from "@/components/TableSkeleton";
 interface GroupsTableProps {
   groups: WhatsAppGroup[];
   selectedPhone?: string | undefined;
+  searchTerm?: string;
+  selectedProject?: string;
+  selectedLabels?: string[];
   onGroupClick?: (group: WhatsAppGroup | null) => void;
   className?: string;
   page?: number;
@@ -65,6 +68,9 @@ export function GroupsTable({
   onGroupClick,
   className,
   selectedPhone,
+  searchTerm: searchTermProp,
+  selectedProject: selectedProjectProp,
+  selectedLabels: selectedLabelsProp,
   page = 1,
   pageSize = 10,
   total = 0,
@@ -87,13 +93,14 @@ export function GroupsTable({
   labelsLoading?: boolean;
 }) {
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProject, setSelectedProject] = useState<string>("");
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [tempProject, setTempProject] = useState<string>("");
   const [tempLabels, setTempLabels] = useState<string[]>([]);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  const searchTerm = searchTermProp ?? "";
+  const selectedProject = selectedProjectProp ?? "";
+  const selectedLabels = selectedLabelsProp ?? [];
 
   // Handle click outside to close filter
   useEffect(() => {
@@ -108,15 +115,6 @@ export function GroupsTable({
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showFilters]);
-
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onSearchChange?.(searchTerm);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, onSearchChange]);
 
   const handleRowClick = (group: WhatsAppGroup) => {
     if (selectedGroup === group.id) {
@@ -152,8 +150,6 @@ export function GroupsTable({
   };
 
   const applyState = ({ project, labels }: { project?: string; labels?: string[] }) => {
-    setSelectedProject(project || "");
-    setSelectedLabels(labels || []);
     onProjectFilterChange?.(project || "");
     onLabelFilterChange?.(labels || []);
     setShowFilters(false);
@@ -201,7 +197,6 @@ export function GroupsTable({
               placeholder="Search"
               value={searchTerm}
               onChange={(e) => {
-                setSearchTerm(e.target.value);
                 onSearchChange?.(e.target.value);
               }}
               className="w-full pl-10 pr-10 py-1.5 bg-gray-100 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200"
@@ -209,7 +204,6 @@ export function GroupsTable({
             {searchTerm && (
               <button
                 onClick={() => {
-                  setSearchTerm("");
                   onSearchChange?.("");
                 }}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
