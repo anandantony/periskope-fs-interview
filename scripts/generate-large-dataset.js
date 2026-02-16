@@ -9,6 +9,13 @@
 
 import { writeFileSync } from "fs";
 
+// Phone numbers for distribution
+const phoneNumbers = [
+  "+1 (555) 123-4567",
+  "+1 (555) 234-5678",
+  "+1 (555) 345-6789",
+];
+
 // Data pools for realistic generation
 const groupNames = [
   "Family",
@@ -302,13 +309,16 @@ function generateWhatsAppGroups(count) {
   for (let i = 1; i <= count; i++) {
     const created = generateRandomDate(365); // Created within last year
     const updated = generateRandomDate(30); // Updated within last month
+    
+    // Distribute groups across the 3 phone numbers
+    const phoneIndex = (i - 1) % phoneNumbers.length;
 
     groups.push({
       id: i,
       name: generateRandomName(),
       description: generateRandomDescription(),
       member_count: Math.floor(Math.random() * 200) + 5, // 5-204 members
-      phone_number: `+1 ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 900000) + 100000}`,
+      phone_number: phoneNumbers[phoneIndex],
       created_at: created,
       updated_at: updated,
       is_active: Math.random() > 0.1, // 90% active
@@ -322,12 +332,19 @@ function generateWhatsAppGroups(count) {
 
 function generateSeedSQL(groups) {
   const sql = [
-    "-- Large Dataset Seed for whatsapp_groups table",
+    "-- Large Dataset Seed for whatsapp_groups table with phone_numbers",
     "-- Generated automatically",
     `-- Total groups: ${groups.length}`,
     "",
     "-- Clear existing data (for development only)",
-    "TRUNCATE TABLE whatsapp_groups RESTART IDENTITY CASCADE;",
+    "TRUNCATE TABLE whatsapp_groups CASCADE;",
+    "TRUNCATE TABLE phone_numbers RESTART IDENTITY CASCADE;",
+    "",
+    "-- Insert phone numbers first",
+    "INSERT INTO phone_numbers (number, status, account_holder) VALUES",
+    "  ('+1 (555) 123-4567', 'active', 'Internal Team A'),",
+    "  ('+1 (555) 234-5678', 'active', 'Internal Team B'),",
+    "  ('+1 (555) 345-6789', 'active', 'Internal Team C');",
     "",
     "-- Insert generated WhatsApp groups",
   ];
@@ -336,8 +353,17 @@ function generateSeedSQL(groups) {
     const labelJson = JSON.stringify(group.labels);
     const escapedName = group.name.replace(/'/g, "''");
     const escapedDescription = group.description.replace(/'/g, "''");
-    sql.push(`INSERT INTO whatsapp_groups (name, description, member_count, phone_number, created_at, updated_at, is_active, project, labels) VALUES
-('${escapedName}', '${escapedDescription}', ${group.member_count}, '${group.phone_number}', '${group.created_at}', '${group.updated_at}', ${group.is_active}, '${group.project}', '${labelJson}'::jsonb);`);
+    
+    // Map phone_number to phone_id (1, 2, or 3)
+    let phoneId = 1;
+    if (group.phone_number === "+1 (555) 234-5678") {
+      phoneId = 2;
+    } else if (group.phone_number === "+1 (555) 345-6789") {
+      phoneId = 3;
+    }
+    
+    sql.push(`INSERT INTO whatsapp_groups (name, description, member_count, phone_id, created_at, updated_at, is_active, project, labels) VALUES
+('${escapedName}', '${escapedDescription}', ${group.member_count}, ${phoneId}, '${group.created_at}', '${group.updated_at}', ${group.is_active}, '${group.project}', '${labelJson}'::jsonb);`);
   });
 
   sql.push("");
@@ -345,7 +371,7 @@ function generateSeedSQL(groups) {
   sql.push("DO $$");
   sql.push("BEGIN");
   sql.push(
-    `  RAISE NOTICE 'Large dataset seeded successfully. Total groups: %', (SELECT COUNT(*) FROM whatsapp_groups);`,
+    `  RAISE NOTICE 'Dataset seeded successfully. Total groups: %', (SELECT COUNT(*) FROM whatsapp_groups);`,
   );
   sql.push("END $$;");
 

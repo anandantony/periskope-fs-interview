@@ -3,7 +3,7 @@ export interface WhatsAppGroup {
   name: string;
   description: string | null;
   member_count: number;
-  phone_number: string;
+  phone_id: string;
   created_at: string;
   updated_at: string;
   is_active: boolean;

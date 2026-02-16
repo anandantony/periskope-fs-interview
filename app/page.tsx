@@ -1,130 +1,72 @@
 "use client";
 
 import { useState } from "react";
+import { TopNav } from "@/components/TopNav";
 import { Sidebar } from "@/components/Sidebar";
 import { GroupsTable } from "@/components/GroupsTable";
 import { SidePanel } from "@/components/SidePanel";
+import { useWhatsAppGroups } from "@/lib/hooks";
 import { WhatsAppGroup } from "@/types";
-
-// Mock data for demonstration
-const mockGroups: WhatsAppGroup[] = [
-  {
-    id: 1,
-    name: "Evoke <> Skope",
-    description: "Official project communication channel",
-    member_count: 45,
-    phone_number: "+1 234 567 8900",
-    created_at: "2024-01-15T10:30:00Z",
-    updated_at: "2024-02-16T14:20:00Z",
-    is_active: true,
-    project: "Evoke",
-    labels: ["Important", "Official", "Active"],
-  },
-  {
-    id: 2,
-    name: "Family Group",
-    description: "Close family members chat",
-    member_count: 12,
-    phone_number: "+1 234 567 8900",
-    created_at: "2024-01-20T09:15:00Z",
-    updated_at: "2024-02-16T11:45:00Z",
-    is_active: true,
-    project: "Personal",
-    labels: ["Family", "Personal"],
-  },
-  {
-    id: 3,
-    name: "Work Team",
-    description: "Project team discussions",
-    member_count: 8,
-    phone_number: "+1 234 567 8900",
-    created_at: "2024-01-10T16:20:00Z",
-    updated_at: "2024-02-15T20:30:00Z",
-    is_active: true,
-    project: "Professional",
-    labels: ["Work", "Team"],
-  },
-  {
-    id: 4,
-    name: "Friends Circle",
-    description: "School and college friends",
-    member_count: 25,
-    phone_number: "+1 234 567 8900",
-    created_at: "2024-01-25T18:00:00Z",
-    updated_at: "2024-02-14T19:15:00Z",
-    is_active: true,
-    project: "Social",
-    labels: ["Friends", "Social"],
-  },
-  {
-    id: 5,
-    name: "Book Club",
-    description: "Monthly book discussions",
-    member_count: 6,
-    phone_number: "+1 234 567 8900",
-    created_at: "2024-01-18T07:30:00Z",
-    updated_at: "2024-02-16T06:45:00Z",
-    is_active: true,
-    project: "Hobby",
-    labels: ["Reading", "Books"],
-  },
-  {
-    id: 6,
-    name: "Tech Enthusiasts",
-    description: "Latest tech news and discussions",
-    member_count: 32,
-    phone_number: "+1 234 567 8900",
-    created_at: "2024-01-12T12:00:00Z",
-    updated_at: "2024-02-16T09:20:00Z",
-    is_active: false,
-    project: "Technology",
-    labels: ["Tech", "Archive"],
-  },
-  {
-    id: 7,
-    name: "Fitness Group",
-    description: "Workout motivation and tips",
-    member_count: 15,
-    phone_number: "+1 234 567 8900",
-    created_at: "2024-01-22T14:30:00Z",
-    updated_at: "2024-02-13T16:45:00Z",
-    is_active: true,
-    project: "Health",
-    labels: ["Fitness", "Health"],
-  },
-  {
-    id: 8,
-    name: "Study Group",
-    description: "Exam preparation and study materials",
-    member_count: 7,
-    phone_number: "+1 234 567 8900",
-    created_at: "2024-01-28T10:15:00Z",
-    updated_at: "2024-02-16T13:30:00Z",
-    is_active: true,
-    project: "Education",
-    labels: ["Study", "Education"],
-  },
-];
+import { Loader } from "lucide-react";
 
 export default function HomePage() {
   const [selectedGroup, setSelectedGroup] = useState<WhatsAppGroup | null>(
     null,
   );
+  const [selectedPhone, setSelectedPhone] = useState<string | undefined>(undefined);
+  const { groups, loading, error, paginationLoading, pagination, setPage, setPageSize } =
+    useWhatsAppGroups(selectedPhone);
 
   const handleGroupClick = (group: WhatsAppGroup) => {
     setSelectedGroup(group);
   };
 
-  return (
-    <div className="h-screen flex bg-gray-100">
-      <Sidebar />
+  // Only show full loader on initial load with no data
+  const showFullLoader = loading && groups.length === 0;
 
+  return (
+    <div className="h-screen flex flex-col bg-gray-100">
+      <TopNav phoneNumber={selectedPhone} onPhoneNumberChange={setSelectedPhone} />
+      
       <div className="flex-1 flex">
-        <div className="flex-1 p-6 overflow-auto">
-          <GroupsTable groups={mockGroups} onGroupClick={handleGroupClick} />
+        <Sidebar />
+
+        <div className="flex-1 flex">
+        <div className="flex-1 overflow-auto flex flex-col">
+          {showFullLoader && (
+            <div className="flex items-center justify-center h-full">
+              <div className="flex flex-col items-center space-y-4">
+                <Loader className="w-8 h-8 animate-spin text-blue-500" />
+                <p className="text-gray-600">Loading WhatsApp groups...</p>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+              <p className="font-semibold">Error loading groups</p>
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
+          {!showFullLoader && !error && (
+            <GroupsTable
+              groups={groups}
+              onGroupClick={handleGroupClick}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              totalPages={pagination.totalPages}
+              paginationLoading={paginationLoading || loading}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              className="rounded-none pb-0 border-0"
+            />
+          )}
         </div>
 
         <SidePanel selectedGroup={selectedGroup} />
+      </div>
       </div>
     </div>
   );
