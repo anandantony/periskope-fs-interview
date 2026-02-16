@@ -1,65 +1,115 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { Sidebar } from "@/components/Sidebar";
+import { GroupsTable } from "@/components/GroupsTable";
+import { SidePanel } from "@/components/SidePanel";
+import { WhatsAppGroup } from "@/types";
+
+// Mock data for demonstration
+const mockGroups: WhatsAppGroup[] = [
+  {
+    id: 1,
+    name: "Family Group",
+    description: "Close family members chat",
+    member_count: 12,
+    phone_number: "+1 234 567 8900",
+    created_at: "2024-01-15T10:30:00Z",
+    updated_at: "2024-02-16T14:20:00Z",
+    is_active: true,
+  },
+  {
+    id: 2,
+    name: "Work Team",
+    description: "Project team discussions",
+    member_count: 8,
+    phone_number: "+1 234 567 8900",
+    created_at: "2024-01-20T09:15:00Z",
+    updated_at: "2024-02-16T11:45:00Z",
+    is_active: true,
+  },
+  {
+    id: 3,
+    name: "Friends Circle",
+    description: "School and college friends",
+    member_count: 25,
+    phone_number: "+1 234 567 8900",
+    created_at: "2024-01-10T16:20:00Z",
+    updated_at: "2024-02-15T20:30:00Z",
+    is_active: true,
+  },
+  {
+    id: 4,
+    name: "Book Club",
+    description: "Monthly book discussions",
+    member_count: 6,
+    phone_number: "+1 234 567 8900",
+    created_at: "2024-01-25T18:00:00Z",
+    updated_at: "2024-02-14T19:15:00Z",
+    is_active: true,
+  },
+  {
+    id: 5,
+    name: "Fitness Group",
+    description: "Workout motivation and tips",
+    member_count: 15,
+    phone_number: "+1 234 567 8900",
+    created_at: "2024-01-18T07:30:00Z",
+    updated_at: "2024-02-16T06:45:00Z",
+    is_active: true,
+  },
+  {
+    id: 6,
+    name: "Tech Enthusiasts",
+    description: "Latest tech news and discussions",
+    member_count: 32,
+    phone_number: "+1 234 567 8900",
+    created_at: "2024-01-12T12:00:00Z",
+    updated_at: "2024-02-16T09:20:00Z",
+    is_active: false,
+  },
+  {
+    id: 7,
+    name: "Recipe Exchange",
+    description: "Share and discover recipes",
+    member_count: 18,
+    phone_number: "+1 234 567 8900",
+    created_at: "2024-01-22T14:30:00Z",
+    updated_at: "2024-02-13T16:45:00Z",
+    is_active: true,
+  },
+  {
+    id: 8,
+    name: "Travel Planning",
+    description: "Upcoming trip discussions",
+    member_count: 10,
+    phone_number: "+1 234 567 8900",
+    created_at: "2024-01-28T10:15:00Z",
+    updated_at: "2024-02-16T13:30:00Z",
+    is_active: true,
+  },
+];
+
+export default function HomePage() {
+  const [selectedGroup, setSelectedGroup] = useState<WhatsAppGroup | null>(
+    null,
+  );
+
+  const handleGroupClick = (group: WhatsAppGroup) => {
+    setSelectedGroup(group);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="h-screen flex bg-gray-100">
+      <Sidebar />
+
+      <div className="flex-1 flex">
+        <div className="flex-1 p-6 overflow-auto">
+          <GroupsTable groups={mockGroups} onGroupClick={handleGroupClick} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <SidePanel selectedGroup={selectedGroup} />
+      </div>
     </div>
   );
 }
