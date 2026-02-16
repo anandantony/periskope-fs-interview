@@ -19,6 +19,7 @@ import { TableSkeleton } from "@/components/TableSkeleton";
 
 interface GroupsTableProps {
   groups: WhatsAppGroup[];
+  selectedPhone?: string | undefined;
   onGroupClick?: (group: WhatsAppGroup) => void;
   className?: string;
   page?: number;
@@ -63,6 +64,7 @@ export function GroupsTable({
   groups,
   onGroupClick,
   className,
+  selectedPhone,
   page = 1,
   pageSize = 10,
   total = 0,
@@ -111,6 +113,11 @@ export function GroupsTable({
             <Badge variant="secondary" className="bg-gray-100 text-gray-700">
               {total}
             </Badge>
+            {selectedPhone ? (
+              <div className="ml-3 text-sm text-gray-600">{selectedPhone}</div>
+            ) : (
+              <div className="ml-3 text-sm text-gray-500">All phone numbers</div>
+            )}
           </div>
           
           <div className="flex gap-2">

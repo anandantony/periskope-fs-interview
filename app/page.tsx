@@ -53,6 +53,7 @@ export default function HomePage() {
             <GroupsTable
               groups={groups}
               onGroupClick={handleGroupClick}
+              selectedPhone={selectedPhone}
               page={pagination.page}
               pageSize={pagination.pageSize}
               total={pagination.total}

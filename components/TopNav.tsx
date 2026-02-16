@@ -22,6 +22,7 @@ interface TopNavProps {
 export function TopNav({ className, phoneNumber, onPhoneNumberChange }: TopNavProps) {
     const [phones, setPhones] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const ALL_VALUE = 'ALL_PHONE_NUMBERS';
 
     useEffect(() => {
         let mounted = true;
@@ -84,12 +85,18 @@ export function TopNav({ className, phoneNumber, onPhoneNumberChange }: TopNavPr
                         <Phone className="w-4 h-4 text-gray-400" />
                         <Select
                             value={phoneNumber ?? ''}
-                            onValueChange={(v) => onPhoneNumberChange?.(v || undefined)}
+                            onValueChange={(v) =>
+                                onPhoneNumberChange?.(v === ALL_VALUE ? undefined : v)
+                            }
                         >
                             <SelectTrigger className="text-sm text-gray-600">
                                 <SelectValue placeholder={loading ? 'Loading…' : 'Select phone'} />
                             </SelectTrigger>
                             <SelectContent position='popper'>
+                                {/* Allow viewing all numbers when empty value selected */}
+                                <SelectItem value={ALL_VALUE}>
+                                    <span className="text-sm">All phone numbers</span>
+                                </SelectItem>
                                 {phones.map((p) => (
                                     <SelectItem key={p} value={p}>
                                         <span className="text-sm">{p}</span>
