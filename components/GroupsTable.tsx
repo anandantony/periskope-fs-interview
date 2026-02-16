@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { WhatsAppGroup } from "@/types";
-import { Users, Clock, MoreHorizontal, Search, Filter, Send, ChevronDown } from "lucide-react";
+import { Users, Clock, MoreHorizontal, Search, Filter, Send, ChevronDown, X } from "lucide-react";
 import { TableSkeleton } from "@/components/TableSkeleton";
 
 interface GroupsTableProps {
@@ -69,7 +69,6 @@ export function GroupsTable({
   pageSize = 10,
   total = 0,
   totalPages = 0,
-  loading = false,
   paginationLoading = false,
   onPageChange,
   onPageSizeChange,
@@ -78,8 +77,6 @@ export function GroupsTable({
   onLabelFilterChange,
   projects = [],
   labels = [],
-  projectsLoading = false,
-  labelsLoading = false,
 }: GroupsTableProps & {
   onSearchChange?: (term: string) => void;
   onProjectFilterChange?: (project: string) => void;
@@ -94,6 +91,40 @@ export function GroupsTable({
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [tempProject, setTempProject] = useState<string>("");
+  const [tempLabels, setTempLabels] = useState<string[]>([]);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // Initialize temp values when filters open
+  useEffect(() => {
+    if (showFilters) {
+      setTempProject(selectedProject);
+      setTempLabels([...selectedLabels]);
+    }
+  }, [showFilters, selectedProject, selectedLabels]);
+
+  // Handle click outside to close filter
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setShowFilters(false);
+      }
+    };
+
+    if (showFilters) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showFilters]);
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onSearchChange?.(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, onSearchChange]);
 
   const handleRowClick = (group: WhatsAppGroup) => {
     setSelectedGroup(group.id);
@@ -114,11 +145,24 @@ export function GroupsTable({
     return date.toLocaleDateString();
   };
 
-  // Use the separate projects and labels from the hook
-  // This ensures the dropdown options remain consistent regardless of current filters
+  const resetFilters = () => {
+    setTempProject("");
+    setTempLabels([]);
+    // Apply the reset immediately
+    applyState({ project: "", labels: [] });
+  };
 
-  // Server-side filtering is handled by the parent component
-  // This component now just displays the filtered results from the server
+  const applyFilters = () => {
+    applyState({ project: tempProject, labels: tempLabels });
+  };
+
+  const applyState = ({ project, labels }: { project?: string; labels?: string[] }) => {
+    setSelectedProject(project || "");
+    setSelectedLabels(labels || []);
+    onProjectFilterChange?.(project || "");
+    onLabelFilterChange?.(labels || []);
+    setShowFilters(false);
+  };
 
   return (
     <Card className={cn("h-full flex flex-col", className)}>
@@ -173,8 +217,19 @@ export function GroupsTable({
                 setSearchTerm(e.target.value);
                 onSearchChange?.(e.target.value);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200"
+              className="w-full pl-10 pr-10 py-1.5 bg-gray-100 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200"
             />
+            {searchTerm && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  onSearchChange?.("");
+                }}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
           <div className="relative">
             <Button 
@@ -188,18 +243,15 @@ export function GroupsTable({
             </Button>
             
             {showFilters && (
-              <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+              <div ref={filterRef} className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                 <div className="p-4">
                   <div className="space-y-4">
                     {/* Project Filter */}
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-2">Project</label>
                       <select
-                        value={selectedProject}
-                        onChange={(e) => {
-                          setSelectedProject(e.target.value);
-                          onProjectFilterChange?.(e.target.value);
-                        }}
+                        value={tempProject}
+                        onChange={(e) => setTempProject(e.target.value)}
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">All projects</option>
@@ -219,16 +271,12 @@ export function GroupsTable({
                           <label key={label} className="flex items-center space-x-2 cursor-pointer">
                             <input
                               type="checkbox"
-                              checked={selectedLabels.includes(label)}
+                              checked={tempLabels.includes(label)}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  const newLabels = [...selectedLabels, label];
-                                  setSelectedLabels(newLabels);
-                                  onLabelFilterChange?.(newLabels);
+                                  setTempLabels([...tempLabels, label]);
                                 } else {
-                                  const newLabels = selectedLabels.filter(l => l !== label);
-                                  setSelectedLabels(newLabels);
-                                  onLabelFilterChange?.(newLabels);
+                                  setTempLabels(tempLabels.filter(l => l !== label));
                                 }
                               }}
                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
@@ -252,17 +300,14 @@ export function GroupsTable({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          setSelectedProject("");
-                          setSelectedLabels([]);
-                        }}
+                        onClick={() => resetFilters()}
                         className="flex-1 text-xs"
                       >
-                        Clear filters
+                        Reset
                       </Button>
                       <Button
                         size="sm"
-                        onClick={() => setShowFilters(false)}
+                        onClick={() => applyFilters()}
                         className="flex-1 text-xs"
                       >
                         Apply
