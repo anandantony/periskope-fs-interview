@@ -27,9 +27,9 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const phoneNumbers = [
-  { number: '+1 (555) 123-4567', account_holder: 'Internal Team A' },
-  { number: '+1 (555) 234-5678', account_holder: 'Internal Team B' },
-  { number: '+1 (555) 345-6789', account_holder: 'Internal Team C' },
+  { number: '+91 98765 43210', account_holder: 'Internal Team A' },
+  { number: '+91 91234 56789', account_holder: 'Internal Team B' },
+  { number: '+91 99876 54321', account_holder: 'Internal Team C' },
 ];
 
 async function seedPhoneNumbers() {

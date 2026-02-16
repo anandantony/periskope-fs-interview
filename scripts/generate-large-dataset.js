@@ -9,11 +9,11 @@
 
 import { writeFileSync } from "fs";
 
-// Phone numbers for distribution
+// Phone numbers for distribution (Indian numbers)
 const phoneNumbers = [
-  "+1 (555) 123-4567",
-  "+1 (555) 234-5678",
-  "+1 (555) 345-6789",
+  "+91 98765 43210",
+  "+91 91234 56789",
+  "+91 99876 54321",
 ];
 
 // Data pools for realistic generation
@@ -342,9 +342,9 @@ function generateSeedSQL(groups) {
     "",
     "-- Insert phone numbers first",
     "INSERT INTO phone_numbers (number, status, account_holder) VALUES",
-    "  ('+1 (555) 123-4567', 'active', 'Internal Team A'),",
-    "  ('+1 (555) 234-5678', 'active', 'Internal Team B'),",
-    "  ('+1 (555) 345-6789', 'active', 'Internal Team C');",
+    "  ('+91 98765 43210', 'active', 'Internal Team A'),",
+    "  ('+91 91234 56789', 'active', 'Internal Team B'),",
+    "  ('+91 99876 54321', 'active', 'Internal Team C');",
     "",
     "-- Insert generated WhatsApp groups",
   ];
@@ -356,9 +356,9 @@ function generateSeedSQL(groups) {
     
     // Map phone_number to phone_id (1, 2, or 3)
     let phoneId = 1;
-    if (group.phone_number === "+1 (555) 234-5678") {
+    if (group.phone_number === "+91 91234 56789") {
       phoneId = 2;
-    } else if (group.phone_number === "+1 (555) 345-6789") {
+    } else if (group.phone_number === "+91 99876 54321") {
       phoneId = 3;
     }
     
