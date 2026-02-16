@@ -73,9 +73,27 @@ export function GroupsTable({
   paginationLoading = false,
   onPageChange,
   onPageSizeChange,
-}: GroupsTableProps) {
+  onSearchChange,
+  onProjectFilterChange,
+  onLabelFilterChange,
+  projects = [],
+  labels = [],
+  projectsLoading = false,
+  labelsLoading = false,
+}: GroupsTableProps & {
+  onSearchChange?: (term: string) => void;
+  onProjectFilterChange?: (project: string) => void;
+  onLabelFilterChange?: (labels: string[]) => void;
+  projects?: string[];
+  labels?: string[];
+  projectsLoading?: boolean;
+  labelsLoading?: boolean;
+}) {
   const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProject, setSelectedProject] = useState<string>("");
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleRowClick = (group: WhatsAppGroup) => {
     setSelectedGroup(group.id);
@@ -96,9 +114,11 @@ export function GroupsTable({
     return date.toLocaleDateString();
   };
 
-  const filteredGroups = groups.filter((group) =>
-    group.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // Use the separate projects and labels from the hook
+  // This ensures the dropdown options remain consistent regardless of current filters
+
+  // Server-side filtering is handled by the parent component
+  // This component now just displays the filtered results from the server
 
   return (
     <Card className={cn("h-full flex flex-col", className)}>
@@ -149,18 +169,110 @@ export function GroupsTable({
               type="text"
               placeholder="Search"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                onSearchChange?.(e.target.value);
+              }}
               className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200"
             />
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-2 border-gray-300 hover:bg-gray-50"
-          >
-            <Filter className="w-4 h-4" />
-            Filter
-          </Button>
+          <div className="relative">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowFilters(!showFilters)}
+              className="gap-2 border-gray-300 hover:bg-gray-50"
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+            </Button>
+            
+            {showFilters && (
+              <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="p-4">
+                  <div className="space-y-4">
+                    {/* Project Filter */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-2">Project</label>
+                      <select
+                        value={selectedProject}
+                        onChange={(e) => {
+                          setSelectedProject(e.target.value);
+                          onProjectFilterChange?.(e.target.value);
+                        }}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">All projects</option>
+                        {projects.map((project) => (
+                          <option key={project} value={project}>
+                            #{project}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Labels Filter */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-2">Labels</label>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {labels.map((label) => (
+                          <label key={label} className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedLabels.includes(label)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  const newLabels = [...selectedLabels, label];
+                                  setSelectedLabels(newLabels);
+                                  onLabelFilterChange?.(newLabels);
+                                } else {
+                                  const newLabels = selectedLabels.filter(l => l !== label);
+                                  setSelectedLabels(newLabels);
+                                  onLabelFilterChange?.(newLabels);
+                                }
+                              }}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <Badge
+                              className={cn(
+                                "text-xs",
+                                labelColors[label] || "bg-gray-100 text-gray-700",
+                              )}
+                              variant="outline"
+                            >
+                              {label}
+                            </Badge>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Filter Actions */}
+                    <div className="flex gap-2 pt-2 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedProject("");
+                          setSelectedLabels([]);
+                        }}
+                        className="flex-1 text-xs"
+                      >
+                        Clear filters
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => setShowFilters(false)}
+                        className="flex-1 text-xs"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </CardHeader>
       
@@ -181,14 +293,14 @@ export function GroupsTable({
             <TableBody>
               {paginationLoading ? (
                 <TableSkeleton rows={pageSize} />
-              ) : filteredGroups.length === 0 ? (
+              ) : groups.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     No groups found
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredGroups.map((group) => (
+                groups.map((group: WhatsAppGroup) => (
                   <TableRow
                     key={group.id}
                     className={cn(

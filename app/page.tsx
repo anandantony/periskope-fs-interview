@@ -14,8 +14,29 @@ export default function HomePage() {
     null,
   );
   const [selectedPhone, setSelectedPhone] = useState<string | undefined>(undefined);
-  const { groups, loading, error, paginationLoading, pagination, setPage, setPageSize } =
-    useWhatsAppGroups(selectedPhone);
+  const [searchTerm, setSearchTermState] = useState("");
+  const [selectedProject, setSelectedProjectState] = useState("");
+  const [selectedLabels, setSelectedLabelsState] = useState<string[]>([]);
+  const { groups, loading, error, paginationLoading, pagination, setPage, setPageSize, projects, labels, projectsLoading, labelsLoading } =
+    useWhatsAppGroups({
+      phoneNumber: selectedPhone,
+      searchTerm: searchTerm,
+      projectFilter: selectedProject,
+      labelFilter: selectedLabels
+    });
+
+  // Connect local state changes to hook functions
+  const handleSearchChange = (term: string) => {
+    setSearchTermState(term);
+  };
+
+  const handleProjectFilterChange = (project: string) => {
+    setSelectedProjectState(project);
+  };
+
+  const handleLabelFilterChange = (labels: string[]) => {
+    setSelectedLabelsState(labels);
+  };
 
   const handleGroupClick = (group: WhatsAppGroup) => {
     setSelectedGroup(group);
@@ -61,6 +82,13 @@ export default function HomePage() {
               paginationLoading={paginationLoading || loading}
               onPageChange={setPage}
               onPageSizeChange={setPageSize}
+              onSearchChange={handleSearchChange}
+              onProjectFilterChange={handleProjectFilterChange}
+              onLabelFilterChange={handleLabelFilterChange}
+              projects={projects}
+              labels={labels}
+              projectsLoading={projectsLoading}
+              labelsLoading={labelsLoading}
               className="rounded-none pb-0 border-0"
             />
           )}
