@@ -1,10 +1,5 @@
 import HomePageClient from "@/app/HomePageClient";
-import {
-  getGroups,
-  getLabels,
-  getPhoneNumbers,
-  getProjects,
-} from "@/lib/server/whatsapp-groups";
+import { getGroups, getLabels, getPhoneNumbers, getProjects } from "@/lib/server/whatsapp-groups";
 
 export const dynamic = "force-dynamic";
 
@@ -12,17 +7,12 @@ type PageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function getStringParam(
-  value: string | string[] | undefined,
-): string | undefined {
+function getStringParam(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];
   return value;
 }
 
-function getNumberParam(
-  value: string | string[] | undefined,
-  fallback: number,
-): number {
+function getNumberParam(value: string | string[] | undefined, fallback: number): number {
   const str = getStringParam(value);
   if (!str) return fallback;
   const n = Number(str);

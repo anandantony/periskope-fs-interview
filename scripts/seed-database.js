@@ -20,10 +20,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error("❌ Missing Supabase environment variables");
   console.error("   NEXT_PUBLIC_SUPABASE_URL:", supabaseUrl ? "✓" : "✗");
-  console.error(
-    "   SUPABASE_SERVICE_ROLE_KEY:",
-    supabaseServiceKey ? "✓" : "✗",
-  );
+  console.error("   SUPABASE_SERVICE_ROLE_KEY:", supabaseServiceKey ? "✓" : "✗");
   process.exit(1);
 }
 
@@ -99,9 +96,7 @@ async function seedGroups(phoneNumberMap) {
       const groupsToInsert = batch
         .map((group) => {
           // Find phone_id by matching phone number
-          const phone = phoneNumberMap.find(
-            (p) => p.number === group.phone_number,
-          );
+          const phone = phoneNumberMap.find((p) => p.number === group.phone_number);
 
           if (!phone) {
             console.warn(

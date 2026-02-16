@@ -10,11 +10,7 @@
 import { writeFileSync } from "fs";
 
 // Phone numbers for distribution (Indian numbers)
-const phoneNumbers = [
-  "+91 98765 43210",
-  "+91 91234 56789",
-  "+91 99876 54321",
-];
+const phoneNumbers = ["+91 98765 43210", "+91 91234 56789", "+91 99876 54321"];
 
 // Data pools for realistic generation
 const groupNames = [
@@ -248,8 +244,7 @@ const labels = [
 
 function generateRandomName() {
   const name = groupNames[Math.floor(Math.random() * groupNames.length)];
-  const descriptor =
-    descriptors[Math.floor(Math.random() * descriptors.length)];
+  const descriptor = descriptors[Math.floor(Math.random() * descriptors.length)];
   const project = projectNames[Math.floor(Math.random() * projectNames.length)];
 
   const patterns = [
@@ -309,7 +304,7 @@ function generateWhatsAppGroups(count) {
   for (let i = 1; i <= count; i++) {
     const created = generateRandomDate(365); // Created within last year
     const updated = generateRandomDate(30); // Updated within last month
-    
+
     // Distribute groups across the 3 phone numbers
     const phoneIndex = (i - 1) % phoneNumbers.length;
 
@@ -353,7 +348,7 @@ function generateSeedSQL(groups) {
     const labelJson = JSON.stringify(group.labels);
     const escapedName = group.name.replace(/'/g, "''");
     const escapedDescription = group.description.replace(/'/g, "''");
-    
+
     // Map phone_number to phone_id (1, 2, or 3)
     let phoneId = 1;
     if (group.phone_number === "+91 91234 56789") {
@@ -361,7 +356,7 @@ function generateSeedSQL(groups) {
     } else if (group.phone_number === "+91 99876 54321") {
       phoneId = 3;
     }
-    
+
     sql.push(`INSERT INTO whatsapp_groups (name, description, member_count, phone_id, created_at, updated_at, is_active, project, labels) VALUES
 ('${escapedName}', '${escapedDescription}', ${group.member_count}, ${phoneId}, '${group.created_at}', '${group.updated_at}', ${group.is_active}, '${group.project}', '${labelJson}'::jsonb);`);
   });
@@ -390,9 +385,7 @@ function main() {
   // Write to seed file
   writeFileSync("supabase/seed-large.sql", seedSQL);
 
-  console.log(
-    `✅ Generated ${count} groups and saved to supabase/seed-large.sql`,
-  );
+  console.log(`✅ Generated ${count} groups and saved to supabase/seed-large.sql`);
   console.log(`📊 Sample data:`);
   console.log(
     `   - Names: ${groups
@@ -403,9 +396,7 @@ function main() {
   console.log(
     `   - Member count range: ${Math.min(...groups.map((g) => g.member_count))} - ${Math.max(...groups.map((g) => g.member_count))}`,
   );
-  console.log(
-    `   - Active groups: ${groups.filter((g) => g.is_active).length}/${groups.length}`,
-  );
+  console.log(`   - Active groups: ${groups.filter((g) => g.is_active).length}/${groups.length}`);
 
   // Show usage instructions
   console.log(`\n🚀 To use this data:`);

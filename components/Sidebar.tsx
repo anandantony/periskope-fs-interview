@@ -34,12 +34,7 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   return (
-    <div
-      className={cn(
-        "w-64 bg-white border-r border-gray-200 flex flex-col h-full",
-        className,
-      )}
-    >
+    <div className={cn("w-64 bg-white border-r border-gray-200 flex flex-col h-full", className)}>
       {/* Header */}
       <div className="p-4">
         <div className="flex items-center space-x-3 mb-4">
@@ -74,8 +69,7 @@ export function Sidebar({ className }: SidebarProps) {
             variant={item.active ? "secondary" : "ghost"}
             className={cn(
               "w-full justify-start text-gray-700 hover:bg-gray-100",
-              item.active &&
-                "bg-green-50 text-green-700 hover:bg-green-100 font-semibold",
+              item.active && "bg-green-50 text-green-700 hover:bg-green-100 font-semibold",
             )}
             asChild={false}
           >

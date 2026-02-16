@@ -50,16 +50,12 @@ export async function getProjects(): Promise<string[]> {
   if (error) throw error;
 
   return Array.from(
-    new Set(
-      ((data || []) as ProjectRow[]).map((g) => g.project).filter(Boolean),
-    ),
+    new Set(((data || []) as ProjectRow[]).map((g) => g.project).filter(Boolean)),
   ) as string[];
 }
 
 export async function getLabels(): Promise<string[]> {
-  const { data, error } = await supabaseServer
-    .from("whatsapp_groups")
-    .select("labels");
+  const { data, error } = await supabaseServer.from("whatsapp_groups").select("labels");
 
   if (error) throw error;
 
@@ -70,9 +66,7 @@ export async function getLabels(): Promise<string[]> {
   return Array.from(new Set(allLabels));
 }
 
-export async function getGroups(
-  params: GetGroupsParams = {},
-): Promise<GroupsResponse> {
+export async function getGroups(params: GetGroupsParams = {}): Promise<GroupsResponse> {
   const {
     phoneNumber,
     searchTerm = "",
@@ -98,9 +92,7 @@ export async function getGroups(
     phoneId = (data as PhoneIdRow).id;
   }
 
-  let query = supabaseServer
-    .from("whatsapp_groups")
-    .select("*", { count: "exact" });
+  let query = supabaseServer.from("whatsapp_groups").select("*", { count: "exact" });
 
   if (phoneId !== null) {
     query = query.eq("phone_id", phoneId);
@@ -126,12 +118,12 @@ export async function getGroups(
 
   if (error) throw error;
 
-  const groups: WhatsAppGroup[] = (
-    (data || []) as Array<WhatsAppGroup & { labels?: unknown }>
-  ).map((group) => ({
-    ...group,
-    labels: Array.isArray(group.labels) ? (group.labels as string[]) : [],
-  }));
+  const groups: WhatsAppGroup[] = ((data || []) as Array<WhatsAppGroup & { labels?: unknown }>).map(
+    (group) => ({
+      ...group,
+      labels: Array.isArray(group.labels) ? (group.labels as string[]) : [],
+    }),
+  );
 
   const total = count || 0;
   const totalPages = Math.ceil(total / pageSize);

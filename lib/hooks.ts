@@ -28,10 +28,7 @@ type GroupsApiResponse = {
 
 const DEFAULT_PAGE_SIZE = 10;
 
-async function fetchJson<T>(
-  input: RequestInfo,
-  init?: RequestInit,
-): Promise<T> {
+async function fetchJson<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   const res = await fetch(input, init);
   const data: unknown = await res.json();
   if (!res.ok) {
@@ -53,32 +50,23 @@ export function useWhatsAppGroups(params: UseWhatsAppGroupsParams = {}) {
     initialData,
   } = params;
 
-  const [groups, setGroups] = useState<WhatsAppGroup[]>(
-    initialData?.groups ?? [],
-  );
+  const [groups, setGroups] = useState<WhatsAppGroup[]>(initialData?.groups ?? []);
   const [loading, setLoading] = useState(!initialData);
   const [paginationLoading, setPaginationLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [page, setPage] = useState(initialData?.page ?? 1);
-  const [pageSize, setPageSize] = useState(
-    initialData?.pageSize ?? DEFAULT_PAGE_SIZE,
-  );
+  const [pageSize, setPageSize] = useState(initialData?.pageSize ?? DEFAULT_PAGE_SIZE);
   const [total, setTotal] = useState(initialData?.total ?? 0);
 
-  const [projects, setProjects] = useState<string[]>(
-    initialData?.projects ?? [],
-  );
+  const [projects, setProjects] = useState<string[]>(initialData?.projects ?? []);
   const [labels, setLabels] = useState<string[]>(initialData?.labels ?? []);
   const [projectsLoading, setProjectsLoading] = useState(!initialData);
   const [labelsLoading, setLabelsLoading] = useState(!initialData);
 
   const didUseInitialData = useRef(Boolean(initialData));
 
-  const totalPages = useMemo(
-    () => Math.ceil(total / pageSize),
-    [total, pageSize],
-  );
+  const totalPages = useMemo(() => Math.ceil(total / pageSize), [total, pageSize]);
 
   useEffect(() => {
     let isMounted = true;
@@ -102,8 +90,7 @@ export function useWhatsAppGroups(params: UseWhatsAppGroupsParams = {}) {
         if (phoneNumber) url.searchParams.set("phone", phoneNumber);
         if (searchTerm) url.searchParams.set("q", searchTerm);
         if (projectFilter) url.searchParams.set("project", projectFilter);
-        if (labelFilter.length > 0)
-          url.searchParams.set("labels", JSON.stringify(labelFilter));
+        if (labelFilter.length > 0) url.searchParams.set("labels", JSON.stringify(labelFilter));
         url.searchParams.set("page", String(page));
         url.searchParams.set("pageSize", String(pageSize));
 

@@ -7,14 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { WhatsAppGroup } from "@/types";
-import {
-  Users,
-  Calendar,
-  MessageSquare,
-  Settings,
-  MoreHorizontal,
-  LogOut,
-} from "lucide-react";
+import { Users, Calendar, MessageSquare, Settings, MoreHorizontal, LogOut } from "lucide-react";
 
 interface SidePanelProps {
   selectedGroup?: WhatsAppGroup | null;
@@ -22,14 +15,8 @@ interface SidePanelProps {
 }
 
 export function SidePanel({ selectedGroup, className }: SidePanelProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "members" | "logs">(
-    "overview",
-  );
-  const tabs: Array<"overview" | "members" | "logs"> = [
-    "overview",
-    "members",
-    "logs",
-  ];
+  const [activeTab, setActiveTab] = useState<"overview" | "members" | "logs">("overview");
+  const tabs: Array<"overview" | "members" | "logs"> = ["overview", "members", "logs"];
 
   if (!selectedGroup) {
     return (
@@ -48,20 +35,13 @@ export function SidePanel({ selectedGroup, className }: SidePanelProps) {
   }
 
   return (
-    <div
-      className={cn(
-        "w-96 bg-white border-l border-gray-200 flex flex-col h-full",
-        className,
-      )}
-    >
+    <div className={cn("w-96 bg-white border-l border-gray-200 flex flex-col h-full", className)}>
       {/* Header */}
       <CardHeader className="pt-4 pb-0">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
             <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-sm font-bold">
-                {selectedGroup.name.charAt(0)}
-              </span>
+              <span className="text-white text-sm font-bold">{selectedGroup.name.charAt(0)}</span>
             </div>
             <div className="flex-1 min-w-0">
               <CardTitle className="text-base font-semibold text-gray-900 truncate">
@@ -115,33 +95,23 @@ export function SidePanel({ selectedGroup, className }: SidePanelProps) {
             {/* Description */}
             {selectedGroup.description && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                  Description
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {selectedGroup.description}
-                </p>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
+                <p className="text-sm text-gray-600">{selectedGroup.description}</p>
               </div>
             )}
 
             {/* Project */}
             {selectedGroup.project && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                  Project
-                </h3>
-                <Badge className="bg-blue-100 text-blue-800">
-                  #{selectedGroup.project}
-                </Badge>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Project</h3>
+                <Badge className="bg-blue-100 text-blue-800">#{selectedGroup.project}</Badge>
               </div>
             )}
 
             {/* Labels */}
             {selectedGroup.labels && selectedGroup.labels.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                  Labels
-                </h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Labels</h3>
                 <div className="flex flex-wrap gap-2">
                   {selectedGroup.labels.map((label: string, idx: number) => (
                     <Badge key={idx} variant="outline" className="text-xs">
@@ -170,15 +140,12 @@ export function SidePanel({ selectedGroup, className }: SidePanelProps) {
 
             {/* Contact Info */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                Contact Information
-              </h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
               <div className="space-y-2">
                 <div className="flex items-center space-x-3">
                   <Calendar className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-gray-600">
-                    Created{" "}
-                    {new Date(selectedGroup.created_at).toLocaleDateString()}
+                    Created {new Date(selectedGroup.created_at).toLocaleDateString()}
                   </span>
                 </div>
               </div>
@@ -186,27 +153,15 @@ export function SidePanel({ selectedGroup, className }: SidePanelProps) {
 
             {/* Actions */}
             <div className="pt-4 border-t space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start text-sm"
-                size="sm"
-              >
+              <Button variant="outline" className="w-full justify-start text-sm" size="sm">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Send Message
               </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-sm"
-                size="sm"
-              >
+              <Button variant="outline" className="w-full justify-start text-sm" size="sm">
                 <Settings className="w-4 h-4 mr-2" />
                 Group Settings
               </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start text-sm"
-                size="sm"
-              >
+              <Button variant="outline" className="w-full justify-start text-sm" size="sm">
                 <LogOut className="w-4 h-4 mr-2" />
                 Leave Group
               </Button>
@@ -225,12 +180,8 @@ export function SidePanel({ selectedGroup, className }: SidePanelProps) {
 
         {activeTab === "logs" && (
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
-              Activity Logs
-            </h3>
-            <p className="text-sm text-gray-500">
-              Activity logs not implemented
-            </p>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Activity Logs</h3>
+            <p className="text-sm text-gray-500">Activity logs not implemented</p>
           </div>
         )}
       </CardContent>

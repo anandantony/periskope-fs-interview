@@ -14,11 +14,11 @@ Your task is to replicate a WhatsApp group management interface. The screen disp
 
 ### Required Components
 
-| Component | Requirements |
-|-----------|--------------|
-| **Sidebar** | Navigation UI (functional navigation not required) |
-| **Table** | Scrollable rows, clickable rows (mock data is acceptable) |
-| **Side Panel** | UI only |
+| Component      | Requirements                                              |
+| -------------- | --------------------------------------------------------- |
+| **Sidebar**    | Navigation UI (functional navigation not required)        |
+| **Table**      | Scrollable rows, clickable rows (mock data is acceptable) |
+| **Side Panel** | UI only                                                   |
 
 > **Note:** All other features shown in the reference are optional enhancements.
 

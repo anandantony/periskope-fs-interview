@@ -30,12 +30,8 @@ export default function HomePageClient({
   initialProjects,
   initialLabels,
 }: HomePageClientProps) {
-  const [selectedGroup, setSelectedGroup] = useState<WhatsAppGroup | null>(
-    null,
-  );
-  const [selectedPhone, setSelectedPhone] = useState<string | undefined>(
-    initialPhone,
-  );
+  const [selectedGroup, setSelectedGroup] = useState<WhatsAppGroup | null>(null);
+  const [selectedPhone, setSelectedPhone] = useState<string | undefined>(initialPhone);
   const [searchTerm, setSearchTermState] = useState("");
   const [selectedProject, setSelectedProjectState] = useState("");
   const [selectedLabels, setSelectedLabelsState] = useState<string[]>([]);

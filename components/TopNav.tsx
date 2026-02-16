@@ -19,12 +19,7 @@ interface TopNavProps {
   onPhoneNumberChange?: (phone?: string) => void;
 }
 
-export function TopNav({
-  className,
-  phones,
-  phoneNumber,
-  onPhoneNumberChange,
-}: TopNavProps) {
+export function TopNav({ className, phones, phoneNumber, onPhoneNumberChange }: TopNavProps) {
   const ALL_VALUE = "ALL_PHONE_NUMBERS";
 
   useEffect(() => {
@@ -54,11 +49,7 @@ export function TopNav({
       <div className="flex items-center gap-6">
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-900"
-          >
+          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
             <FileText className="w-4 h-4 mr-2" />
             Docs
           </Button>
@@ -68,9 +59,7 @@ export function TopNav({
             <Phone className="w-4 h-4 text-gray-400" />
             <Select
               value={phoneNumber ?? ""}
-              onValueChange={(v) =>
-                onPhoneNumberChange?.(v === ALL_VALUE ? undefined : v)
-              }
+              onValueChange={(v) => onPhoneNumberChange?.(v === ALL_VALUE ? undefined : v)}
             >
               <SelectTrigger className="text-sm text-gray-600">
                 <SelectValue placeholder="Select phone" />
@@ -89,19 +78,11 @@ export function TopNav({
             </Select>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-900"
-          >
+          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
             <Bell className="w-4 h-4" />
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-900"
-          >
+          <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
             <Settings className="w-4 h-4" />
           </Button>
         </div>

@@ -14,15 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { WhatsAppGroup } from "@/types";
-import {
-  Users,
-  MoreHorizontal,
-  Search,
-  Filter,
-  Send,
-  ChevronDown,
-  X,
-} from "lucide-react";
+import { Users, MoreHorizontal, Search, Filter, Send, ChevronDown, X } from "lucide-react";
 import { TableSkeleton } from "@/components/TableSkeleton";
 
 interface GroupsTableProps {
@@ -106,18 +98,14 @@ export function GroupsTable({
   // Handle click outside to close filter
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target as Node)
-      ) {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
         setShowFilters(false);
       }
     };
 
     if (showFilters) {
       document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [showFilters]);
 
@@ -143,9 +131,7 @@ export function GroupsTable({
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
-    );
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
@@ -165,13 +151,7 @@ export function GroupsTable({
     applyState({ project: tempProject, labels: tempLabels });
   };
 
-  const applyState = ({
-    project,
-    labels,
-  }: {
-    project?: string;
-    labels?: string[];
-  }) => {
+  const applyState = ({ project, labels }: { project?: string; labels?: string[] }) => {
     setSelectedProject(project || "");
     setSelectedLabels(labels || []);
     onProjectFilterChange?.(project || "");
@@ -195,27 +175,17 @@ export function GroupsTable({
             {selectedPhone ? (
               <div className="ml-3 text-sm text-gray-600">{selectedPhone}</div>
             ) : (
-              <div className="ml-3 text-sm text-gray-500">
-                All phone numbers
-              </div>
+              <div className="ml-3 text-sm text-gray-500">All phone numbers</div>
             )}
           </div>
 
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 border-gray-300 hover:bg-gray-50"
-            >
+            <Button variant="outline" size="sm" className="gap-2 border-gray-300 hover:bg-gray-50">
               <Send className="w-4 h-4" />
               Bulk message
             </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 border-gray-300 hover:bg-gray-50"
-            >
+            <Button variant="outline" size="sm" className="gap-2 border-gray-300 hover:bg-gray-50">
               Group Actions
               <ChevronDown className="w-4 h-4" />
             </Button>
@@ -291,15 +261,10 @@ export function GroupsTable({
 
                     {/* Labels Filter */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-2">
-                        Labels
-                      </label>
+                      <label className="block text-xs font-medium text-gray-700 mb-2">Labels</label>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {labels.map((label) => (
-                          <label
-                            key={label}
-                            className="flex items-center space-x-2 cursor-pointer"
-                          >
+                          <label key={label} className="flex items-center space-x-2 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={tempLabels.includes(label)}
@@ -307,9 +272,7 @@ export function GroupsTable({
                                 if (e.target.checked) {
                                   setTempLabels([...tempLabels, label]);
                                 } else {
-                                  setTempLabels(
-                                    tempLabels.filter((l) => l !== label),
-                                  );
+                                  setTempLabels(tempLabels.filter((l) => l !== label));
                                 }
                               }}
                               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
@@ -317,8 +280,7 @@ export function GroupsTable({
                             <Badge
                               className={cn(
                                 "text-xs",
-                                labelColors[label] ||
-                                  "bg-gray-100 text-gray-700",
+                                labelColors[label] || "bg-gray-100 text-gray-700",
                               )}
                               variant="outline"
                             >
@@ -339,11 +301,7 @@ export function GroupsTable({
                       >
                         Reset
                       </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => applyFilters()}
-                        className="flex-1 text-xs"
-                      >
+                      <Button size="sm" onClick={() => applyFilters()} className="flex-1 text-xs">
                         Apply
                       </Button>
                     </div>
@@ -374,10 +332,7 @@ export function GroupsTable({
                 <TableSkeleton rows={pageSize} />
               ) : groups.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="text-center py-8 text-gray-500"
-                  >
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                     No groups found
                   </TableCell>
                 </TableRow>
@@ -424,8 +379,7 @@ export function GroupsTable({
                       <Badge
                         className={cn(
                           "text-xs whitespace-nowrap",
-                          projectColors[group.project || "General"] ||
-                            "bg-gray-100 text-gray-700",
+                          projectColors[group.project || "General"] || "bg-gray-100 text-gray-700",
                         )}
                         variant="outline"
                       >
@@ -435,36 +389,25 @@ export function GroupsTable({
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {group.labels && group.labels.length > 0 ? (
-                          group.labels
-                            .slice(0, 2)
-                            .map((label: string, index: number) => (
-                              <Badge
-                                key={index}
-                                className={cn(
-                                  "text-xs",
-                                  labelColors[label] ||
-                                    "bg-gray-100 text-gray-700",
-                                )}
-                                variant="outline"
-                              >
-                                {label.length > 8
-                                  ? `${label.substring(0, 8)}...`
-                                  : label}
-                              </Badge>
-                            ))
+                          group.labels.slice(0, 2).map((label: string, index: number) => (
+                            <Badge
+                              key={index}
+                              className={cn(
+                                "text-xs",
+                                labelColors[label] || "bg-gray-100 text-gray-700",
+                              )}
+                              variant="outline"
+                            >
+                              {label.length > 8 ? `${label.substring(0, 8)}...` : label}
+                            </Badge>
+                          ))
                         ) : (
-                          <Badge
-                            variant="outline"
-                            className="text-xs text-gray-500"
-                          >
+                          <Badge variant="outline" className="text-xs text-gray-500">
                             No labels
                           </Badge>
                         )}
                         {group.labels && group.labels.length > 2 && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs text-gray-500"
-                          >
+                          <Badge variant="outline" className="text-xs text-gray-500">
                             +{group.labels.length - 2}
                           </Badge>
                         )}
@@ -504,15 +447,9 @@ export function GroupsTable({
           <div className="flex items-center justify-between px-4 py-4 border-t bg-gray-50">
             <div className="flex items-center gap-4">
               <div className="text-sm text-gray-600">
-                Showing{" "}
-                <span className="font-semibold">
-                  {(page - 1) * pageSize + 1}
-                </span>{" "}
-                to{" "}
-                <span className="font-semibold">
-                  {Math.min(page * pageSize, total)}
-                </span>{" "}
-                of <span className="font-semibold">{total}</span> groups
+                Showing <span className="font-semibold">{(page - 1) * pageSize + 1}</span> to{" "}
+                <span className="font-semibold">{Math.min(page * pageSize, total)}</span> of{" "}
+                <span className="font-semibold">{total}</span> groups
               </div>
 
               <div className="flex items-center gap-2">

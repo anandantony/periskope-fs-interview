@@ -145,6 +145,7 @@ Usage highlights
 - Seed scripts provide both small and large datasets for testing
 
 Deployment (Vercel)
+
 > Use the deploy button at the top to get started quickly
 
 1. Push the repository to GitHub
