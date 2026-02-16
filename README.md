@@ -1,179 +1,137 @@
-# WhatsApp Group Management Interface
+## WhatsApp Group Management Interface
 
-A WhatsApp group management interface built with Next.js 13+, Tailwind CSS, Supabase, and TypeScript. This project replicates a WhatsApp group management system with a modern, responsive UI.
+A compact Next.js + Supabase example app for viewing and managing WhatsApp-style group metadata. It demonstrates:
+- Server-side pagination and filtering via Supabase
+- Normalized phone numbers (`phone_numbers`) with `whatsapp_groups.phone_id` foreign key
+- A small, responsive UI built with Tailwind CSS and shadcn/ui components
 
-## Overview
+Tech stack
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- shadcn/ui (Radix + Tailwind)
+- Supabase (Postgres) with migrations and seed scripts
 
-This application provides a clean interface for managing WhatsApp groups associated with a phone number. It features a sidebar navigation, scrollable groups table, and a detailed side panel for group information.
+Getting started
 
-### Features
+Prerequisites
+- Node.js 18+
+- Supabase account (for cloud DB)
+- Git
 
-- **Sidebar Navigation** - Clean navigation UI with search functionality
-- **Groups Table** - Scrollable table with clickable rows showing WhatsApp groups
-- **Side Panel** - Detailed view of selected group information
-- **Responsive Design** - Works seamlessly on different screen sizes
-- **Modern UI** - Built with shadcn/ui components and Tailwind CSS
-
-### Tech Stack
-
-- **Framework**: Next.js 13+ (App Router)
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Database**: Supabase (PostgreSQL)
-- **Language**: TypeScript
-- **Icons**: Lucide React
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ installed
-- Supabase account (for database setup)
-- Git for version control
-
-### Installation
-
-1. Clone the repository:
-
+Installation
 ```bash
 git clone <repository-url>
 cd periskope-fs-interview
-```
-
-2. Install dependencies:
-
-```bash
 npm install
 ```
 
-3. Set up environment variables:
-
+Environment
 ```bash
 cp .env.example .env.local
 ```
-
-4. Configure your Supabase credentials in `.env.local`:
-
-```env
+Then edit `.env.local` and set:
+```
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-### Database Setup
+Database setup
 
-1. Create a new Supabase project
-2. Run the following SQL in the Supabase SQL Editor:
+The repository includes migrations under `supabase/migrations` and seeder scripts in `scripts/`.
 
+Common workflows
+```bash
+# push migrations to Supabase (uses the Supabase CLI connection configured in package.json scripts)
+npm run db:push
+
+# seed a small sample dataset (upserts phone numbers then inserts groups)
+npm run db:seed
+
+# generate a larger dataset file
+npm run db:generate-large
+
+# seed the large dataset (writes and executes SQL produced by generator)
+npm run db:seed-large
+```
+
+Notes about the schema
+- Phone numbers are normalized into a `phone_numbers` table and referenced by `whatsapp_groups.phone_id`.
+- The seeder will upsert phone numbers (so re-running is safe) and then insert groups referencing the phone ids.
+
+Example SQL (normalized schema)
 ```sql
+-- Phone numbers
+CREATE TABLE phone_numbers (
+  id SERIAL PRIMARY KEY,
+  number VARCHAR(32) NOT NULL UNIQUE,
+  status VARCHAR(32) DEFAULT 'active',
+  account_holder VARCHAR(255),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Groups referencing phone id
 CREATE TABLE whatsapp_groups (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   description TEXT,
   member_count INTEGER DEFAULT 0,
-  phone_number VARCHAR(20),
+  phone_id INTEGER REFERENCES phone_numbers(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   is_active BOOLEAN DEFAULT true
 );
 
--- Insert sample data
-INSERT INTO whatsapp_groups (name, description, member_count, phone_number) VALUES
-('Family Group', 'Close family members chat', 12, '+1234567890'),
-('Work Team', 'Project team discussions', 8, '+1234567890'),
-('Friends Circle', 'School and college friends', 25, '+1234567890'),
-('Book Club', 'Monthly book discussions', 6, '+1234567890'),
-('Fitness Group', 'Workout motivation and tips', 15, '+1234567890');
+-- Example inserts
+INSERT INTO phone_numbers (number, status, account_holder) VALUES
+  ('+91 98765 43210', 'active', 'Internal Team A'),
+  ('+91 91234 56789', 'active', 'Internal Team B');
+
+INSERT INTO whatsapp_groups (name, description, member_count, phone_id) VALUES
+('Family Group', 'Close family members chat', 12, 1),
+('Work Team', 'Project team discussions', 8, 1),
+('Friends Circle', 'School and college friends', 25, 2);
 ```
 
-### Running the Application
-
-Start the development server:
-
+Running the app
 ```bash
 npm run dev
 ```
+Open http://localhost:3000 to view the UI.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Key scripts
+- `npm run db:push` — push migrations to Supabase
+- `npm run db:seed` — run small seeder (upserts `phone_numbers`, inserts groups)
+- `npm run db:generate-large` — generate a large SQL file under `supabase/` for bulk testing
+- `npm run db:seed-large` — load the generated large dataset into Supabase
 
-## Project Structure
-
+Project structure
 ```
-├── app/                    # Next.js app directory
-│   ├── page.tsx           # Main page component
-│   ├── layout.tsx         # Root layout
-│   └── globals.css        # Global styles
-├── components/            # React components
-│   ├── ui/               # shadcn/ui components
-│   ├── Sidebar.tsx       # Sidebar navigation
-│   ├── GroupsTable.tsx   # Groups table component
-│   └── SidePanel.tsx     # Side panel component
-├── lib/                  # Utility libraries
-│   ├── utils.ts          # Utility functions
-│   └── supabase.ts       # Supabase client configuration
-├── types/                # TypeScript type definitions
-│   └── index.ts          # Main types
-└── .env.example          # Environment variables template
+├── app/                    # Next.js app directory (App Router)
+├── components/             # React components (TopNav, GroupsTable, Sidebar, SidePanel)
+├── components/ui/          # shadcn/ui wrappers (Select, Button, Card, etc.)
+├── lib/                    # Utilities and Supabase client
+├── supabase/               # Migrations and SQL seed files
+├── scripts/                # Seed/generator scripts
+├── types/                  # TypeScript type definitions
+└── .env.example            # Env template
 ```
 
-## Usage
+Usage highlights
+- Browse groups and filter by phone number via the top selector
+- Server-side pagination keeps UI responsive for large datasets
+- Seed scripts provide both small and large datasets for testing
 
-1. **View Groups**: The main table displays all WhatsApp groups
-2. **Select Group**: Click on any row to view detailed information
-3. **Navigate**: Use the sidebar for navigation (UI only)
-4. **Search**: Use the search bar in the sidebar to filter groups
+Deployment (Vercel)
+1. Push the repository to GitHub
+2. Connect the repo in Vercel
+3. Configure environment variables in the Vercel dashboard (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
+4. Deploy — Vercel will automatically build the Next.js app
 
-## Deployment
+Developer notes
+- The Supabase client is in `lib/supabase.ts` and the UI uses `useWhatsAppGroups` hook for paginated queries
+- Seed scripts use `dotenv` for local env values when run from your machine
+- The `TopNav` component fetches phone numbers from `phone_numbers` and provides an "All phone numbers" option
 
-### Vercel Deployment
-
-1. Push your code to a public GitHub repository
-2. Connect your GitHub account to Vercel
-3. Import the project and configure environment variables
-4. Deploy automatically
-
-### Environment Variables for Production
-
-Add these in your Vercel dashboard:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-
-## Development
-
-### Adding New Features
-
-1. Create components in the `components/` directory
-2. Add types in `types/index.ts`
-3. Update the main page in `app/page.tsx`
-4. Follow the existing code patterns and styling
-
-### Code Style
-
-- Use TypeScript for all components
-- Follow the existing component structure
-- Use Tailwind CSS for styling
-- Implement proper error handling
-- Add loading states where appropriate
-
-## Learn More
-
-To learn more about the technologies used:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
-- [Tailwind CSS](https://tailwindcss.com/docs) - utility-first CSS framework
-- [Supabase Documentation](https://supabase.com/docs) - open source Firebase alternative
-- [shadcn/ui](https://ui.shadcn.com/) - beautifully designed components
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is for demonstration purposes as part of a technical assessment.
+License
+This repository is a take-home demo and is provided for assessment purposes.
